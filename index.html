@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup Sweepstakes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pitch: #1a5c2a;
+    --pitch-light: #236b33;
+    --pitch-dark: #0f3a19;
+    --gold: #f5c842;
+    --gold-dark: #d4a520;
+    --red: #e03030;
+    --white: #f8f8f2;
+    --shadow: 0 8px 32px rgba(0,0,0,0.22);
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--pitch-dark);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(180deg, var(--pitch) 0px, var(--pitch) 60px, var(--pitch-light) 60px, var(--pitch-light) 120px);
+    opacity: 0.55; z-index: 0; pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 70%);
+    z-index: 0; pointer-events: none;
+  }
+  .container { position: relative; z-index: 1; max-width: 940px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* Header */
+  header { text-align: center; padding: 38px 0 18px; }
+  .trophy { font-size: 52px; display: block; margin-bottom: 4px; filter: drop-shadow(0 4px 18px rgba(245,200,66,0.6)); animation: float 3.2s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem,7vw,5rem); letter-spacing: 3px; color: var(--gold); text-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 2px 0 var(--gold-dark); line-height: 1; }
+  .subtitle { font-family: 'Teko', sans-serif; font-size: 1.2rem; letter-spacing: 4px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-top: 6px; }
+  .header-coffee { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 11px 24px; background: #FFDD00; color: #000; font-weight: 800; font-size: 1rem; border-radius: 30px; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(0,0,0,0.3); animation: coffeePulse 2.2s ease-in-out infinite; }
+  .header-coffee:hover { transform: translateY(-2px) scale(1.03); }
+  @keyframes coffeePulse { 0%,100%{box-shadow:0 4px 16px rgba(0,0,0,0.3)} 50%{box-shadow:0 6px 26px rgba(255,221,0,0.6)} }
+
+  /* Cards */
+  .card { background: rgba(255,255,255,0.10); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow); }
+  .card-title { font-family: 'Teko', sans-serif; font-size: 1.55rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 9px; }
+
+  /* Forms */
+  label { display: block; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.5px; color: rgba(255,255,255,0.7); margin-bottom: 5px; text-transform: uppercase; }
+  input[type="text"], input[type="number"], select {
+    width: 100%; padding: 11px 14px; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 9px;
+    background: rgba(0,0,0,0.3); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.97rem; outline: none; transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--gold); background: rgba(0,0,0,0.45); }
+  select option { background: #1a3d25; color: #fff; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: transform 0.13s, box-shadow 0.13s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #1a1a1a; box-shadow: 0 4px 16px rgba(245,200,66,0.4); }
+  .btn-gold:hover { box-shadow: 0 6px 24px rgba(245,200,66,0.55); transform: translateY(-1px); }
+  .btn-green { background: linear-gradient(135deg, #2d9642, #1a6b2d); color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .btn-green:hover { transform: translateY(-1px); }
+  .btn-red { background: linear-gradient(135deg, #e03030, #a02020); color: #fff; }
+  .btn-red:hover { transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.3); color: var(--white); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+
+  /* Layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .add-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .add-row input, .add-row select { flex: 1; min-width: 120px; }
+  .controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+  .divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0; }
+  .section-note { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+
+  /* Pills */
+  .list-scroll { max-height: 240px; overflow-y: auto; padding-right: 4px; }
+  .list-scroll::-webkit-scrollbar { width: 5px; }
+  .list-scroll::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border: 1px solid rgba(255,255,255,0.18); border-radius: 30px; font-size: 0.88rem; font-weight: 500; animation: popIn 0.2s ease; }
+  @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+  .pill .remove { cursor: pointer; color: rgba(255,255,255,0.45); font-size: 0.85em; background: none; border: none; padding: 0; transition: color 0.15s; }
+  .pill .remove:hover { color: var(--red); }
+  .country-pill { background: rgba(26,92,42,0.55); border-color: rgba(245,200,66,0.3); }
+  .person-pill  { background: rgba(20,60,100,0.55); border-color: rgba(120,180,255,0.3); }
+
+  /* Draw preview bar */
+  .draw-preview {
+    margin-top: 16px; padding: 12px 16px; border-radius: 10px;
+    background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.5; min-height: 20px;
+  }
+  .draw-preview:empty { display: none; }
+  .drop-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(224,48,48,0.2); border: 1px solid rgba(224,48,48,0.4); border-radius: 20px; padding: 2px 8px; font-size: 0.8rem; color: #ff8a8a; margin: 2px; }
+
+  /* Qty badge */
+  .qty-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #111; font-size: 0.78rem; font-weight: 700; margin-left: 4px; }
+
+  /* Results */
+  #resultsCard { display: none; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; }
+  .result-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 16px; text-align: center; animation: slideUp 0.3s ease both; transition: transform 0.15s; }
+  .result-item:hover { transform: translateY(-3px); }
+  @keyframes slideUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .result-person { font-family: 'Teko', sans-serif; font-size: 1.35rem; font-weight: 600; color: var(--white); }
+  .result-gets { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin: 2px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .result-country { display: inline-flex; align-items: center; gap: 6px; background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.35); border-radius: 20px; padding: 4px 12px; font-size: 0.88rem; font-weight: 600; color: var(--gold); margin: 3px 2px; }
+
+  /* Dropped teams section */
+  .dropped-section { margin-top: 18px; padding: 14px 16px; border-radius: 10px; background: rgba(224,48,48,0.1); border: 1px solid rgba(224,48,48,0.3); }
+  .dropped-title { font-family: 'Teko', sans-serif; font-size: 1.1rem; color: #ff8a8a; letter-spacing: 1px; margin-bottom: 8px; }
+  .dropped-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Coffee prompt */
+  .coffee-prompt { margin-top: 26px; padding: 24px 20px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,221,0,0.16), rgba(95,127,255,0.14)); border: 2px dashed rgba(255,221,0,0.55); text-align: center; opacity: 0; transform: translateY(20px); }
+  .coffee-prompt.reveal { animation: coffeeReveal 0.6s cubic-bezier(.22,1,.36,1) 0.4s forwards; }
+  @keyframes coffeeReveal { to{opacity:1;transform:translateY(0)} }
+  .coffee-prompt p { font-family: 'Teko', sans-serif; font-size: 1.7rem; letter-spacing: 1px; color: #fff; margin-bottom: 16px; }
+  .coffee-btn-large { display: inline-flex; align-items: center; gap: 10px; padding: 16px 38px; background: #FFDD00; color: #000; font-weight: 800; font-size: 1.2rem; border-radius: 34px; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 6px 22px rgba(255,221,0,0.45); animation: coffeePulse 2.2s ease-in-out infinite; }
+  .coffee-btn-large:hover { transform: translateY(-3px) scale(1.05); }
+  .coffee-btn-large span { font-size: 1.3em; animation: steam 2s ease-in-out infinite; }
+  @keyframes steam { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-2px) rotate(-6deg)} }
+  .coffee-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 16px; }
+  .coffee-qr img { border-radius: 12px; background: #fff; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+  .coffee-qr span { font-size: 0.8rem; color: rgba(255,255,255,0.55); }
+
+  /* Saved sweepstakes */
+  .saved-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
+  .saved-name { font-weight: 600; font-size: 0.97rem; }
+  .saved-meta { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #111; font-weight: 700; padding: 12px 28px; border-radius: 30px; z-index: 9999; transition: transform 0.35s cubic-bezier(.22,1,.36,1); box-shadow: 0 6px 28px rgba(0,0,0,0.4); white-space: nowrap; font-size: 0.95rem; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Draw overlay */
+  #drawOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center; flex-direction: column; gap: 18px; text-align: center; padding: 20px; }
+  #drawOverlay.active { display: flex; }
+  .draw-spinner { width: 72px; height: 72px; border: 6px solid rgba(245,200,66,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .draw-text { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; color: var(--gold); letter-spacing: 4px; animation: pulse 0.8s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* Cookie banner */
+  #cookieBanner { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,30,15,0.97); border-top: 2px solid rgba(245,200,66,0.4); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; z-index: 10000; flex-wrap: wrap; backdrop-filter: blur(10px); }
+  #cookieBanner p { font-size: 0.88rem; color: rgba(255,255,255,0.8); max-width: 660px; line-height: 1.5; }
+
+  /* Misc */
+  .empty-state { text-align: center; color: rgba(255,255,255,0.35); padding: 20px 0; font-size: 0.92rem; }
+
+  /* Responsive */
+  @media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) {
+    .card { padding: 16px 13px; }
+    .add-row { flex-direction: column; }
+    .add-row input, .add-row select, .add-row .btn { width: 100%; justify-content: center; }
+    .controls-row { flex-direction: column; align-items: stretch; }
+    .controls-row .btn { width: 100%; justify-content: center; }
+    .results-grid { grid-template-columns: 1fr 1fr; }
+    .saved-item { flex-direction: column; align-items: flex-start; }
+    .saved-item > div:last-child { display: flex; width: 100%; }
+    .saved-item .btn { flex: 1; justify-content: center; }
+    #cookieBanner { flex-direction: column; text-align: center; }
+    #cookieBanner > div { width: 100%; display: flex; gap: 8px; }
+    #cookieBanner .btn { flex: 1; justify-content: center; }
+  }
+  @media (max-width: 360px) { .results-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:999"></canvas>
+
+<div id="drawOverlay">
+  <div class="draw-spinner"></div>
+  <div class="draw-text">Drawing...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <span class="trophy">🏆</span>
+    <h1>World Cup Sweepstakes</h1>
+    <div class="subtitle">2026 · The Ultimate Draw Generator</div>
+    <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="header-coffee">
+      <span>☕</span> Buy Me a Coffee
+    </a>
+  </header>
+
+  <!-- Saved sweepstakes -->
+  <div class="card" id="savedCard">
+    <div class="card-title">📋 Saved Sweepstakes <span class="qty-badge" id="savedCount">0</span></div>
+    <div id="savedList"><div class="empty-state">No saved sweepstakes yet — run a draw below!</div></div>
+  </div>
+
+  <!-- Setup -->
+  <div class="card">
+    <div class="card-title">⚙️ Setup Your Sweepstake</div>
+
+    <div style="margin-bottom:16px">
+      <label>Sweepstake Name</label>
+      <input type="text" id="sweepName" placeholder="e.g. Office World Cup 2026" maxlength="60">
+    </div>
+
+    <div class="two-col">
+      <!-- Participants -->
+      <div>
+        <div class="card-title" style="font-size:1.15rem">👥 Participants <span class="qty-badge" id="pCount">0</span></div>
+        <div class="section-note">Countries are split evenly between participants.</div>
+        <div class="add-row">
+          <input type="text" id="personInput" placeholder="Enter name..." maxlength="40">
+          <button class="btn btn-green btn-sm" onclick="addPerson()">+ Add</button>
+        </div>
+        <div class="list-scroll">
+          <div class="pill-list" id="personList">
+            <div class="empty-state" id="personEmpty">No participants yet</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="loadPresetParticipants()">📋 Example Names</button>
+          <button class="btn btn-outline btn-sm" onclick="clearPeople()">🗑 Clear</button>
+        </div>
+      </div>
+
+      <!-- Countries -->
+      <div>
+        <div class="card-title" style="font-size:1.15rem">🌍 Countries <span class="qty-badge" id="cCount">0</span></div>
+        <div class="section-note">Sorted by FIFA rank. Lowest-ranked teams drop if needed.</div>
+        <div class="add-row">
+          <select id="countrySelect" style="flex:1"></select>
+          <input type="number" id="countryQty" value="1" min="1" max="20" style="width:64px;flex:none">
+          <button class="btn btn-green btn-sm" onclick="addCountry()">+ Add</button>
+        </div>
+        <div class="list-scroll">
+          <div class="pill-list" id="countryList">
+            <div class="empty-state" id="countryEmpty">No countries yet</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="loadAllCountries()">🌍 All 48 Teams</button>
+          <button class="btn btn-outline btn-sm" onclick="clearCountries()">🗑 Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live draw preview -->
+    <div class="draw-preview" id="drawPreview"></div>
+
+    <div class="controls-row" style="margin-top:16px">
+      <button class="btn btn-gold" onclick="runDraw()" style="font-size:1.05rem;padding:13px 30px">🎰 Run the Draw!</button>
+      <button class="btn btn-outline" onclick="resetSetup()">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="card" id="resultsCard">
+    <div class="card-title">🎉 Draw Results</div>
+    <div class="results-grid" id="resultsGrid"></div>
+
+    <!-- Dropped teams shown here -->
+    <div id="droppedSection" style="display:none" class="dropped-section">
+      <div class="dropped-title">🚫 Dropped (lowest FIFA ranked)</div>
+      <div class="dropped-list" id="droppedList"></div>
+    </div>
+
+    <div class="controls-row">
+      <button class="btn btn-gold" onclick="runDraw()">🎰 Redraw</button>
+      <button class="btn btn-green" onclick="saveSweepstake()">💾 Save</button>
+      <button class="btn btn-outline" onclick="downloadImage()">📸 Share Image</button>
+      <button class="btn btn-outline" onclick="copyResults()">📋 Copy</button>
+      <button class="btn btn-outline" onclick="printResults()">🖨 Print</button>
+    </div>
+
+    <div class="coffee-prompt" id="coffeePrompt">
+      <p>Enjoyed your draw? Support the site! 💛</p>
+      <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="coffee-btn-large">
+        <span>☕</span> Buy Me a Coffee
+      </a>
+      <div class="coffee-qr">
+        <img src="qr-code.png" alt="Buy Me a Coffee QR code" width="120" height="120">
+        <span>Or scan to support 📱</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Cookie Banner -->
+<div id="cookieBanner">
+  <p>🍪 We use cookies to save your sweepstakes so you can return without re-entering everything. No tracking, no ads.</p>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button class="btn btn-outline btn-sm" onclick="declineCookies()">Decline</button>
+    <button class="btn btn-gold btn-sm" onclick="acceptCookies()">Accept & Continue</button>
+  </div>
+</div>
+
+<script>
+// ─── Cookie helpers ──────────────────────────────────────────────────────────
+const COOKIE_KEY = 'wcSweepConsent';
+const DATA_KEY   = 'wcSweepData';
+
+function setCookie(name, val, days=365) {
+  const d = new Date();
+  d.setTime(d.getTime() + days*86400000);
+  document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+}
+function getCookie(name) {
+  const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));
+  return m ? decodeURIComponent(m[2]) : null;
+}
+function cookiesAccepted() { return getCookie(COOKIE_KEY) === 'yes'; }
+
+function saveToStorage(data) {
+  try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function loadFromStorage() {
+  try { return JSON.parse(localStorage.getItem(DATA_KEY)) || {}; } catch(e) { return {}; }
+}
+
+function acceptCookies() {
+  setCookie(COOKIE_KEY, 'yes');
+  hideBanner();
+  savedData = loadFromStorage();
+  loadSavedSweepstakes();
+  showToast('✅ Cookies accepted — your draws will be saved!');
+}
+function declineCookies() {
+  setCookie(COOKIE_KEY, 'no');
+  hideBanner();
+}
+function hideBanner() {
+  const b = document.getElementById('cookieBanner');
+  b.style.transition = 'transform 0.3s ease';
+  b.style.transform = 'translateY(100%)';
+  setTimeout(() => b.remove(), 300);
+}
+
+// ─── Countries (FIFA ranked, April 2026) ────────────────────────────────────
+const ALL_COUNTRIES = [
+  {name:'France',       flag:'🇫🇷', rank:1 },
+  {name:'Spain',        flag:'🇪🇸', rank:2 },
+  {name:'Argentina',    flag:'🇦🇷', rank:3 },
+  {name:'England',      flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rank:4 },
+  {name:'Brazil',       flag:'🇧🇷', rank:5 },
+  {name:'Portugal',     flag:'🇵🇹', rank:6 },
+  {name:'Netherlands',  flag:'🇳🇱', rank:7 },
+  {name:'Belgium',      flag:'🇧🇪', rank:8 },
+  {name:'Germany',      flag:'🇩🇪', rank:9 },
+  {name:'Croatia',      flag:'🇭🇷', rank:10},
+  {name:'Morocco',      flag:'🇲🇦', rank:11},
+  {name:'Italy',        flag:'🇮🇹', rank:12},
+  {name:'Colombia',     flag:'🇨🇴', rank:13},
+  {name:'Mexico',       flag:'🇲🇽', rank:15},
+  {name:'USA',          flag:'🇺🇸', rank:16},
+  {name:'Uruguay',      flag:'🇺🇾', rank:16},
+  {name:'Switzerland',  flag:'🇨🇭', rank:17},
+  {name:'Japan',        flag:'🇯🇵', rank:18},
+  {name:'Senegal',      flag:'🇸🇳', rank:19},
+  {name:'Iran',         flag:'🇮🇷', rank:20},
+  {name:'Denmark',      flag:'🇩🇰', rank:21},
+  {name:'South Korea',  flag:'🇰🇷', rank:22},
+  {name:'Ecuador',      flag:'🇪🇨', rank:23},
+  {name:'Austria',      flag:'🇦🇹', rank:24},
+  {name:'Turkey',       flag:'🇹🇷', rank:25},
+  {name:'Australia',    flag:'🇦🇺', rank:26},
+  {name:'Ukraine',      flag:'🇺🇦', rank:28},
+  {name:'Norway',       flag:'🇳🇴', rank:29},
+  {name:'Canada',       flag:'🇨🇦', rank:30},
+  {name:'Poland',       flag:'🇵🇱', rank:31},
+  {name:'Wales',        flag:'🏴󠁧󠁢󠁷󠁬󠁳󠁿', rank:32},
+  {name:'Algeria',      flag:'🇩🇿', rank:34},
+  {name:'Egypt',        flag:'🇪🇬', rank:35},
+  {name:'Scotland',     flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', rank:36},
+  {name:'Serbia',       flag:'🇷🇸', rank:37},
+  {name:'Nigeria',      flag:'🇳🇬', rank:38},
+  {name:'Paraguay',     flag:'🇵🇾', rank:39},
+  {name:'Cameroon',     flag:'🇨🇲', rank:48},
+  {name:'Tunisia',      flag:'🇹🇳', rank:41},
+  {name:'Ivory Coast',  flag:'🇨🇮', rank:42},
+  {name:'Sweden',       flag:'🇸🇪', rank:43},
+  {name:'Czechia',      flag:'🇨🇿', rank:44},
+  {name:'Chile',        flag:'🇨🇱', rank:56},
+  {name:'Qatar',        flag:'🇶🇦', rank:53},
+  {name:'Saudi Arabia', flag:'🇸🇦', rank:60},
+  {name:'Peru',         flag:'🇵🇪', rank:70},
+  {name:'Ghana',        flag:'🇬🇭', rank:72},
+  {name:'Bolivia',      flag:'🇧🇴', rank:85},
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let participants = [];
+let countries    = [];
+let lastResults  = null;
+let lastDropped  = [];
+let savedData    = {};
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+(function init() {
+  populateCountrySelect();
+  // Always load storage (cookie check only gates saving, not reading)
+  savedData = loadFromStorage();
+  if (cookiesAccepted()) {
+    document.getElementById('cookieBanner').remove();
+    loadSavedSweepstakes();
+  } else {
+    loadSavedSweepstakes(); // show any previously saved (before consent was stored)
+  }
+  document.getElementById('personInput').addEventListener('keydown', e => { if(e.key==='Enter') addPerson(); });
+  document.getElementById('countrySelect').addEventListener('keydown', e => { if(e.key==='Enter') addCountry(); });
+})();
+
+function populateCountrySelect() {
+  const sel = document.getElementById('countrySelect');
+  sel.innerHTML = '<option value="">— Choose country —</option>';
+  [...ALL_COUNTRIES].sort((a,b) => a.rank - b.rank).forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.name;
+    o.textContent = `${c.flag} ${c.name} (FIFA #${c.rank})`;
+    o.dataset.flag = c.flag;
+    o.dataset.rank = c.rank;
+    sel.appendChild(o);
+  });
+}
+
+// ─── Participants ─────────────────────────────────────────────────────────────
+function addPerson() {
+  const inp = document.getElementById('personInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  participants.push({name});
+  inp.value = '';
+  renderPeople();
+  updatePreview();
+}
+function removePerson(i) { participants.splice(i,1); renderPeople(); updatePreview(); }
+function clearPeople()   { participants = []; renderPeople(); updatePreview(); }
+function loadPresetParticipants() {
+  ['Alice','Bob','Charlie','Diana','Ethan','Fiona','George','Hannah','Ivan','Julia'].forEach(n => participants.push({name:n}));
+  renderPeople(); updatePreview();
+  showToast('Example names loaded!');
+}
+function renderPeople() {
+  const list = document.getElementById('personList');
+  document.getElementById('pCount').textContent = participants.length;
+  if (!participants.length) { list.innerHTML = '<div class="empty-state" id="personEmpty">No participants yet</div>'; return; }
+  list.innerHTML = participants.map((p,i) => `
+    <div class="pill person-pill">👤 ${esc(p.name)}<button class="remove" onclick="removePerson(${i})">✕</button></div>`).join('');
+}
+
+// ─── Countries ────────────────────────────────────────────────────────────────
+function addCountry() {
+  const sel = document.getElementById('countrySelect');
+  const qty = parseInt(document.getElementById('countryQty').value) || 1;
+  const name = sel.value;
+  if (!name) return;
+  const opt  = sel.options[sel.selectedIndex];
+  const flag = opt.dataset.flag || '🏳';
+  const rank = parseInt(opt.dataset.rank) || 99;
+  for (let i = 0; i < qty; i++) countries.push({name, flag, rank});
+  renderCountries(); updatePreview();
+}
+function removeCountry(i) { countries.splice(i,1); renderCountries(); updatePreview(); }
+function clearCountries()  { countries = []; renderCountries(); updatePreview(); }
+function loadAllCountries() {
+  countries = ALL_COUNTRIES.map(c => ({name:c.name, flag:c.flag, rank:c.rank}));
+  renderCountries(); updatePreview();
+  showToast('All 48 teams loaded!');
+}
+function renderCountries() {
+  const list = document.getElementById('countryList');
+  document.getElementById('cCount').textContent = countries.length;
+  if (!countries.length) { list.innerHTML = '<div class="empty-state" id="countryEmpty">No countries yet</div>'; return; }
+  list.innerHTML = countries.map((c,i) => `
+    <div class="pill country-pill">
+      ${c.flag} ${esc(c.name)} <span style="opacity:0.5;font-size:0.78em">#${c.rank}</span>
+      <button class="remove" onclick="removeCountry(${i})">✕</button>
+    </div>`).join('');
+}
+
+// ─── Live preview ─────────────────────────────────────────────────────────────
+function updatePreview() {
+  const p = participants.length, c = countries.length;
+  const box = document.getElementById('drawPreview');
+  if (!p || !c) { box.innerHTML = ''; return; }
+
+  const perPerson = Math.floor(c / p);
+  const remainder = c % p;
+
+  if (perPerson === 0) {
+    box.innerHTML = `⚠️ Not enough countries for ${p} people — add more teams.`;
+    return;
+  }
+
+  // Which teams will be dropped?
+  const toDrop = getDropped(countries, p);
+
+  let html = `✅ <strong>${p} people</strong> × <strong>${perPerson} countries each</strong> (${c} total`;
+  if (toDrop.length) {
+    html += `, dropping ${toDrop.length})`;
+    html += `<br><span style="font-size:0.82rem;color:rgba(255,255,255,0.5)">Will drop: </span>`;
+    html += toDrop.map(t => `<span class="drop-tag">${t.flag} ${t.name} #${t.rank}</span>`).join('');
+  } else {
+    html += `, perfect fit)`;
+  }
+  box.innerHTML = html;
+}
+
+// Returns the teams that will be dropped (worst ranked, to make count divisible by p)
+function getDropped(pool, p) {
+  const keep = Math.floor(pool.length / p) * p;
+  const dropCount = pool.length - keep;
+  if (!dropCount) return [];
+  // Sort worst-first (highest rank number = worst), take the bottom `dropCount`
+  return [...pool].sort((a,b) => b.rank - a.rank).slice(0, dropCount);
+}
+
+// ─── Draw ─────────────────────────────────────────────────────────────────────
+
+// Fisher-Yates — the only shuffle we need; called fresh each draw
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+async function runDraw() {
+  if (!participants.length) { showToast('⚠️ Add at least one participant!'); return; }
+  if (!countries.length)    { showToast('⚠️ Add at least one country!'); return; }
+
+  const n = participants.length;
+  const perPerson = Math.floor(countries.length / n);
+  if (perPerson === 0) { showToast('⚠️ Not enough countries — add more teams!'); return; }
+
+  const overlay = document.getElementById('drawOverlay');
+  overlay.classList.add('active');
+  await sleep(900 + Math.random()*600);
+
+  // 1. Drop worst-ranked so pool divides evenly
+  const dropped = getDropped(countries, n);
+  const droppedNames = new Set(dropped.map(d => d.name));
+
+  // 2. Single clean Fisher-Yates shuffle of the filtered pool
+  const pool = shuffle(countries.filter(c => !droppedNames.has(c.name)));
+
+  // 3. Shuffle participant order so nobody is always dealt first
+  const shuffledParticipants = shuffle(participants);
+  const result = shuffledParticipants.map(p => ({name: p.name, countries: [], countryNames: new Set()}));
+
+  // 4. Deal one card at a time, re-randomising seat order each round.
+  //    Skip if this person already holds this country (prevents duplicates).
+  let poolIndex = 0;
+  for (let round = 0; round < perPerson; round++) {
+    const order = shuffle([...Array(n).keys()]);
+    for (const seat of order) {
+      // Find the next card in the pool this person doesn't already have
+      let found = false;
+      for (let attempt = poolIndex; attempt < pool.length; attempt++) {
+        if (!result[seat].countryNames.has(pool[attempt].name)) {
+          // Swap it into the current position so pool stays consumable
+          [pool[poolIndex], pool[attempt]] = [pool[attempt], pool[poolIndex]];
+          result[seat].countries.push(pool[poolIndex]);
+          result[seat].countryNames.add(pool[poolIndex].name);
+          poolIndex++;
+          found = true;
+          break;
+        }
+      }
+      // Fallback: if every remaining card is a duplicate for this person, just take the next one
+      if (!found && poolIndex < pool.length) {
+        result[seat].countries.push(pool[poolIndex]);
+        result[seat].countryNames.add(pool[poolIndex].name);
+        poolIndex++;
+      }
+    }
+  }
+
+  // Clean up helper sets before storing
+  result.forEach(r => delete r.countryNames);
+
+  lastResults = result;
+  lastDropped = dropped;
+
+  overlay.classList.remove('active');
+  renderResults(result, dropped);
+  fireConfetti();
+}
+
+// ─── Render results ───────────────────────────────────────────────────────────
+function renderResults(result, dropped) {
+  const card = document.getElementById('resultsCard');
+  const grid = document.getElementById('resultsGrid');
+  card.style.display = 'block';
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+
+  grid.innerHTML = result.map((r, i) => `
+    <div class="result-item" style="animation-delay:${i*55}ms">
+      <div class="result-person">👤 ${esc(r.name)}</div>
+      <div class="result-gets">draws</div>
+      ${r.countries.map(c => `<div class="result-country">${c.flag} ${esc(c.name)}</div>`).join('')}
+    </div>`).join('');
+
+  // Dropped teams
+  const sec  = document.getElementById('droppedSection');
+  const list = document.getElementById('droppedList');
+  if (dropped && dropped.length) {
+    sec.style.display = 'block';
+    list.innerHTML = dropped.map(t =>
+      `<span class="drop-tag">${t.flag} ${t.name} <span style="opacity:0.7">FIFA #${t.rank}</span></span>`
+    ).join('');
+  } else {
+    sec.style.display = 'none';
+  }
+
+  // Coffee reveal
+  const coffee = document.getElementById('coffeePrompt');
+  coffee.classList.remove('reveal');
+  void coffee.offsetWidth;
+  coffee.classList.add('reveal');
+}
+
+// ─── Share image ──────────────────────────────────────────────────────────────
+async function downloadImage() {
+  if (!lastResults) return;
+  const name = document.getElementById('sweepName').value.trim() || 'World Cup Sweepstakes 2026';
+
+  const canvas = document.createElement('canvas');
+  const cols   = Math.min(lastResults.length, 4);
+  const rows   = Math.ceil(lastResults.length / cols);
+  const cardW  = 220, cardH = 40 + lastResults.reduce((m,r) => Math.max(m, r.countries.length), 0) * 28;
+  const pad    = 20, headerH = 90, footerH = 48;
+
+  canvas.width  = cols * (cardW + pad) + pad;
+  canvas.height = headerH + rows * (cardH + pad) + pad + footerH;
+
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#0f3a19';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Pitch stripes
+  for (let y = 0; y < canvas.height; y += 60) {
+    ctx.fillStyle = y % 120 === 0 ? 'rgba(26,92,42,0.7)' : 'rgba(35,107,51,0.7)';
+    ctx.fillRect(0, y, canvas.width, 60);
+  }
+
+  // Header
+  ctx.fillStyle = '#f5c842';
+  ctx.font = 'bold 32px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏆 ' + name, canvas.width / 2, 44);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = '14px Arial, sans-serif';
+  ctx.fillText('Drawn ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), canvas.width / 2, 66);
+
+  // Cards
+  lastResults.forEach((r, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x   = pad + col * (cardW + pad);
+    const y   = headerH + row * (cardH + pad);
+
+    // Card bg
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    roundRect(ctx, x, y, cardW, cardH, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245,200,66,0.3)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, x, y, cardW, cardH, 10);
+    ctx.stroke();
+
+    // Name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(r.name, x + cardW/2, y + 22);
+
+    // Countries
+    r.countries.forEach((c, ci) => {
+      ctx.fillStyle = 'rgba(245,200,66,0.85)';
+      ctx.font = '13px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${c.flag} ${c.name}`, x + cardW/2, y + 40 + ci * 28);
+    });
+  });
+
+  // Footer with BMC link
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, canvas.height - footerH, canvas.width, footerH);
+  ctx.fillStyle = '#FFDD00';
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('☕ buymeacoffee.com/Rm49', canvas.width / 2, canvas.height - footerH/2 + 5);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'sweepstakes.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('📸 Image downloaded!');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y, x+w,y+r, r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h, x+w-r,y+h, r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h, x,y+h-r, r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y, x+r,y, r);
+  ctx.closePath();
+}
+
+// ─── Save / Load ──────────────────────────────────────────────────────────────
+function saveSweepstake() {
+  if (!lastResults) { showToast('Run a draw first!'); return; }
+  if (!cookiesAccepted()) { showToast('⚠️ Accept cookies to save sweepstakes'); return; }
+  const name = document.getElementById('sweepName').value.trim() || ('Sweep ' + new Date().toLocaleDateString());
+  const id   = Date.now().toString();
+  if (!savedData.sweepstakes) savedData.sweepstakes = {};
+  savedData.sweepstakes[id] = { id, name, date: new Date().toISOString(), participants:[...participants], countries:[...countries], results:lastResults, dropped:lastDropped };
+  saveToStorage(savedData);
+  loadSavedSweepstakes();
+  showToast('💾 Sweepstake saved!');
+}
+
+function loadSavedSweepstakes() {
+  const list  = document.getElementById('savedList');
+  const count = document.getElementById('savedCount');
+  const sweeps = Object.values(savedData.sweepstakes || {}).sort((a,b) => b.date.localeCompare(a.date));
+  count.textContent = sweeps.length;
+  if (!sweeps.length) { list.innerHTML = '<div class="empty-state">No saved sweepstakes yet — run a draw below!</div>'; return; }
+  list.innerHTML = sweeps.map(s => `
+    <div class="saved-item">
+      <div>
+        <div class="saved-name">🏆 ${esc(s.name)}</div>
+        <div class="saved-meta">${new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} · ${s.results.length} people · ${s.countries.length} teams</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="viewSaved('${s.id}')">👁 View</button>
+        <button class="btn btn-green btn-sm"   onclick="loadSaved('${s.id}')">↺ Load</button>
+        <button class="btn btn-red btn-sm"     onclick="deleteSaved('${s.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function viewSaved(id) {
+  const s = savedData.sweepstakes[id];
+  if (!s) return;
+  lastResults = s.results;
+  lastDropped = s.dropped || [];
+  renderResults(s.results, s.dropped || []);
+}
+function loadSaved(id) {
+  const s = savedData.sweepstakes[id];
+  if (!s) return;
+  participants = s.participants;
+  countries    = s.countries;
+  document.getElementById('sweepName').value = s.name;
+  renderPeople(); renderCountries(); updatePreview();
+  lastResults = s.results; lastDropped = s.dropped || [];
+  renderResults(s.results, s.dropped || []);
+  showToast('Sweepstake loaded!');
+}
+function deleteSaved(id) {
+  if (!confirm('Delete this sweepstake?')) return;
+  delete savedData.sweepstakes[id];
+  saveToStorage(savedData);
+  loadSavedSweepstakes();
+  showToast('Deleted');
+}
+
+// ─── Copy / Print ─────────────────────────────────────────────────────────────
+function copyResults() {
+  if (!lastResults) return;
+  const text = lastResults.map(r => `${r.name}: ${r.countries.map(c=>c.flag+' '+c.name).join(', ')}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Copied!'));
+}
+function printResults() {
+  if (!lastResults) return;
+  const name = document.getElementById('sweepName').value.trim() || 'World Cup Sweepstake';
+  const rows = lastResults.map(r =>
+    `<tr><td style="padding:8px 14px;border:1px solid #ddd;font-weight:600">${esc(r.name)}</td>
+     <td style="padding:8px 14px;border:1px solid #ddd">${r.countries.map(c=>c.flag+' '+c.name).join(' · ')}</td></tr>`).join('');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${esc(name)}</title>
+    <style>body{font-family:Arial,sans-serif;padding:30px}h1{color:#1a5c2a}table{border-collapse:collapse;width:100%}</style>
+    </head><body><h1>🏆 ${esc(name)}</h1>
+    <p>Drawn on ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+    <table>${rows}</table>
+    <p style="margin-top:24px;color:#888;font-size:12px">☕ buymeacoffee.com/Rm49</p>
+    </body></html>`);
+  w.document.close(); w.print();
+}
+
+function resetSetup() {
+  participants = []; countries = []; lastResults = null; lastDropped = [];
+  renderPeople(); renderCountries(); updatePreview();
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('sweepName').value = '';
+}
+
+// ─── Confetti ─────────────────────────────────────────────────────────────────
+function fireConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const pieces = Array.from({length:180}, () => ({
+    x:Math.random()*canvas.width, y:-20-Math.random()*200,
+    w:8+Math.random()*8, h:4+Math.random()*5,
+    r:Math.random()*Math.PI*2, vx:(Math.random()-0.5)*4,
+    vy:2.5+Math.random()*3, vr:(Math.random()-0.5)*0.2,
+    color:['#f5c842','#e03030','#3a9f57','#4ab3f4','#fff'][Math.floor(Math.random()*5)]
+  }));
+  let frame = 0;
+  (function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+      p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vy+=0.05;
+    });
+    if (++frame < 160) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  })();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function showToast(msg, dur=2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+</script>
+
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="Rm49" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+</body>
+</html>
