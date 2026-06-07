@@ -96,6 +96,24 @@
   .country-pill { background: rgba(26,92,42,0.55); border-color: rgba(245,200,66,0.3); }
   .person-pill  { background: rgba(20,60,100,0.55); border-color: rgba(120,180,255,0.3); }
 
+  /* Mode toggle */
+  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .mode-toggle { grid-template-columns: 1fr; } }
+  .mode-btn {
+    display: flex; flex-direction: column; gap: 4px; text-align: left;
+    padding: 13px 16px; border-radius: 11px; cursor: pointer;
+    background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.12);
+    color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.97rem; font-weight: 700;
+    transition: border-color 0.18s, background 0.18s;
+  }
+  .mode-btn span { font-size: 0.78rem; font-weight: 400; color: rgba(255,255,255,0.55); line-height: 1.4; }
+  .mode-btn:hover { border-color: rgba(245,200,66,0.4); }
+  .mode-btn.active { border-color: var(--gold); background: rgba(245,200,66,0.1); }
+  .mode-btn.active span { color: rgba(255,255,255,0.75); }
+
+  /* Pot grouping in results */
+  .pot-tag { font-size: 0.68rem; opacity: 0.55; font-weight: 700; letter-spacing: 0.5px; }
+
   /* Draw preview bar */
   .draw-preview {
     margin-top: 16px; padding: 12px 16px; border-radius: 10px;
@@ -257,6 +275,19 @@
       </div>
     </div>
 
+    <!-- Draw mode -->
+    <div style="margin-top:18px">
+      <label>Draw Mode</label>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeEven" onclick="setMode('even')">
+          ⚖️ Split evenly<span>Each person gets an equal share of all teams</span>
+        </button>
+        <button class="mode-btn" id="modePot" onclick="setMode('pot')">
+          🎩 One per pot<span>Each person gets 1 team from each pot (1–4), balanced for fairness</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Live draw preview -->
     <div class="draw-preview" id="drawPreview"></div>
 
@@ -349,56 +380,61 @@ function hideBanner() {
   setTimeout(() => b.remove(), 300);
 }
 
-// ─── All 48 teams — verified from FIFA official squad list PDF (June 2026) ───
+// ─── All 48 teams with official 2026 draw pots (Dec 2025 draw) ──────────────
+// pot 1-4 per FIFA. weakHost flags the 3 host nations in Pot 1 who are lower-ranked.
 const ALL_COUNTRIES = [
-  {name:'Argentina',          flag:'🇦🇷', rank:1  },
-  {name:'France',             flag:'🇫🇷', rank:2  },
-  {name:'Spain',              flag:'🇪🇸', rank:3  },
-  {name:'England',            flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', rank:4  },
-  {name:'Portugal',           flag:'🇵🇹', rank:5  },
-  {name:'Netherlands',        flag:'🇳🇱', rank:6  },
-  {name:'Belgium',            flag:'🇧🇪', rank:7  },
-  {name:'Germany',            flag:'🇩🇪', rank:8  },
-  {name:'Croatia',            flag:'🇭🇷', rank:9  },
-  {name:'Morocco',            flag:'🇲🇦', rank:13 },
-  {name:'Brazil',             flag:'🇧🇷', rank:14 },
-  {name:'USA',                flag:'🇺🇸', rank:11 },
-  {name:'Mexico',             flag:'🇲🇽', rank:15 },
-  {name:'Colombia',           flag:'🇨🇴', rank:17 },
-  {name:'Uruguay',            flag:'🇺🇾', rank:18 },
-  {name:'Japan',              flag:'🇯🇵', rank:16 },
-  {name:'Senegal',            flag:'🇸🇳', rank:19 },
-  {name:'IR Iran',            flag:'🇮🇷', rank:21 },
-  {name:'Austria',            flag:'🇦🇹', rank:20 },
-  {name:'South Korea',        flag:'🇰🇷', rank:22 },
-  {name:'Ecuador',            flag:'🇪🇨', rank:23 },
-  {name:'Switzerland',        flag:'🇨🇭', rank:24 },
-  {name:'Turkey',             flag:'🇹🇷', rank:25 },
-  {name:'Australia',          flag:'🇦🇺', rank:26 },
-  {name:'Norway',             flag:'🇳🇴', rank:27 },
-  {name:'Canada',             flag:'🇨🇦', rank:30 },
-  {name:'Sweden',             flag:'🇸🇪', rank:31 },
-  {name:'Scotland',           flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', rank:33 },
-  {name:'Egypt',              flag:'🇪🇬', rank:34 },
-  {name:'Algeria',            flag:'🇩🇿', rank:37 },
-  {name:'Tunisia',            flag:'🇹🇳', rank:39 },
-  {name:'Czechia',            flag:'🇨🇿', rank:40 },
-  {name:'Panama',             flag:'🇵🇦', rank:43 },
-  {name:'Paraguay',           flag:'🇵🇾', rank:47 },
-  {name:'Qatar',              flag:'🇶🇦', rank:53 },
-  {name:'Bosnia & Herz.',     flag:'🇧🇦', rank:54 },
-  {name:'Iraq',               flag:'🇮🇶', rank:55 },
-  {name:'Congo DR',           flag:'🇨🇩', rank:56 },
-  {name:'Ghana',              flag:'🇬🇭', rank:57 },
-  {name:'South Africa',       flag:'🇿🇦', rank:59 },
-  {name:'Saudi Arabia',       flag:'🇸🇦', rank:60 },
-  {name:'Ivory Coast',        flag:'🇨🇮', rank:50 },
-  {name:'Jordan',             flag:'🇯🇴', rank:68 },
-  {name:'Cabo Verde',         flag:'🇨🇻', rank:75 },
-  {name:'Uzbekistan',         flag:'🇺🇿', rank:74 },
-  {name:'New Zealand',        flag:'🇳🇿', rank:92 },
-  {name:'Haiti',              flag:'🇭🇹', rank:83 },
-  {name:'Curaçao',            flag:'🇨🇼', rank:90 },
+  // POT 1
+  {name:'Spain',          flag:'🇪🇸', pot:1, rank:3 },
+  {name:'Argentina',      flag:'🇦🇷', pot:1, rank:1 },
+  {name:'France',         flag:'🇫🇷', pot:1, rank:2 },
+  {name:'England',        flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', pot:1, rank:4 },
+  {name:'Brazil',         flag:'🇧🇷', pot:1, rank:5 },
+  {name:'Portugal',       flag:'🇵🇹', pot:1, rank:6 },
+  {name:'Netherlands',    flag:'🇳🇱', pot:1, rank:7 },
+  {name:'Belgium',        flag:'🇧🇪', pot:1, rank:8 },
+  {name:'Germany',        flag:'🇩🇪', pot:1, rank:9 },
+  {name:'USA',            flag:'🇺🇸', pot:1, rank:16, weakHost:true},
+  {name:'Mexico',         flag:'🇲🇽', pot:1, rank:14, weakHost:true},
+  {name:'Canada',         flag:'🇨🇦', pot:1, rank:30, weakHost:true},
+  // POT 2
+  {name:'Croatia',        flag:'🇭🇷', pot:2, rank:10},
+  {name:'Morocco',        flag:'🇲🇦', pot:2, rank:11},
+  {name:'Colombia',       flag:'🇨🇴', pot:2, rank:13},
+  {name:'Uruguay',        flag:'🇺🇾', pot:2, rank:15},
+  {name:'Switzerland',    flag:'🇨🇭', pot:2, rank:17},
+  {name:'Japan',          flag:'🇯🇵', pot:2, rank:18},
+  {name:'Senegal',        flag:'🇸🇳', pot:2, rank:19},
+  {name:'IR Iran',        flag:'🇮🇷', pot:2, rank:20},
+  {name:'South Korea',    flag:'🇰🇷', pot:2, rank:22},
+  {name:'Ecuador',        flag:'🇪🇨', pot:2, rank:23},
+  {name:'Austria',        flag:'🇦🇹', pot:2, rank:24},
+  {name:'Australia',      flag:'🇦🇺', pot:2, rank:26},
+  // POT 3
+  {name:'Norway',         flag:'🇳🇴', pot:3, rank:27},
+  {name:'Panama',         flag:'🇵🇦', pot:3, rank:43},
+  {name:'Egypt',          flag:'🇪🇬', pot:3, rank:34},
+  {name:'Algeria',        flag:'🇩🇿', pot:3, rank:37},
+  {name:'Scotland',       flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', pot:3, rank:33},
+  {name:'Paraguay',       flag:'🇵🇾', pot:3, rank:39},
+  {name:'Tunisia',        flag:'🇹🇳', pot:3, rank:38},
+  {name:'Ivory Coast',    flag:'🇨🇮', pot:3, rank:42},
+  {name:'Uzbekistan',     flag:'🇺🇿', pot:3, rank:50},
+  {name:'Qatar',          flag:'🇶🇦', pot:3, rank:53},
+  {name:'Saudi Arabia',   flag:'🇸🇦', pot:3, rank:60},
+  {name:'South Africa',   flag:'🇿🇦', pot:3, rank:61},
+  // POT 4
+  {name:'Jordan',         flag:'🇯🇴', pot:4, rank:64},
+  {name:'Cabo Verde',     flag:'🇨🇻', pot:4, rank:70},
+  {name:'Ghana',          flag:'🇬🇭', pot:4, rank:73},
+  {name:'Curaçao',        flag:'🇨🇼', pot:4, rank:82},
+  {name:'Haiti',          flag:'🇭🇹', pot:4, rank:83},
+  {name:'New Zealand',    flag:'🇳🇿', pot:4, rank:86},
+  {name:'Bosnia & Herz.', flag:'🇧🇦', pot:4, rank:54},
+  {name:'Sweden',         flag:'🇸🇪', pot:4, rank:31},
+  {name:'Turkey',         flag:'🇹🇷', pot:4, rank:25},
+  {name:'Czechia',        flag:'🇨🇿', pot:4, rank:40},
+  {name:'Congo DR',       flag:'🇨🇩', pot:4, rank:56},
+  {name:'Iraq',           flag:'🇮🇶', pot:4, rank:55},
 ];
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -407,6 +443,14 @@ let countries    = [];
 let lastResults  = null;
 let lastDropped  = [];
 let savedData    = {};
+let drawMode     = 'even'; // 'even' or 'pot'
+
+function setMode(m) {
+  drawMode = m;
+  document.getElementById('modeEven').classList.toggle('active', m === 'even');
+  document.getElementById('modePot').classList.toggle('active', m === 'pot');
+  updatePreview();
+}
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 (function init() {
@@ -426,12 +470,10 @@ let savedData    = {};
 function populateCountrySelect() {
   const sel = document.getElementById('countrySelect');
   sel.innerHTML = '<option value="">— Choose country —</option>';
-  [...ALL_COUNTRIES].sort((a,b) => a.rank - b.rank).forEach(c => {
+  [...ALL_COUNTRIES].sort((a,b) => a.pot - b.pot || a.rank - b.rank).forEach(c => {
     const o = document.createElement('option');
     o.value = c.name;
-    o.textContent = `${c.flag} ${c.name} (FIFA #${c.rank})`;
-    o.dataset.flag = c.flag;
-    o.dataset.rank = c.rank;
+    o.textContent = `${c.flag} ${c.name} (Pot ${c.pot})`;
     sel.appendChild(o);
   });
 }
@@ -467,16 +509,15 @@ function addCountry() {
   const qty = parseInt(document.getElementById('countryQty').value) || 1;
   const name = sel.value;
   if (!name) return;
-  const opt  = sel.options[sel.selectedIndex];
-  const flag = opt.dataset.flag || '🏳';
-  const rank = parseInt(opt.dataset.rank) || 99;
-  for (let i = 0; i < qty; i++) countries.push({name, flag, rank});
+  const meta = ALL_COUNTRIES.find(c => c.name === name);
+  if (!meta) return;
+  for (let i = 0; i < qty; i++) countries.push({...meta});
   renderCountries(); updatePreview();
 }
 function removeCountry(i) { countries.splice(i,1); renderCountries(); updatePreview(); }
 function clearCountries()  { countries = []; renderCountries(); updatePreview(); }
 function loadAllCountries() {
-  countries = ALL_COUNTRIES.map(c => ({name:c.name, flag:c.flag, rank:c.rank}));
+  countries = ALL_COUNTRIES.map(c => ({...c}));
   renderCountries(); updatePreview();
   showToast('All 48 teams loaded!');
 }
@@ -486,7 +527,7 @@ function renderCountries() {
   if (!countries.length) { list.innerHTML = '<div class="empty-state" id="countryEmpty">No countries yet</div>'; return; }
   list.innerHTML = countries.map((c,i) => `
     <div class="pill country-pill">
-      ${c.flag} ${esc(c.name)} <span style="opacity:0.5;font-size:0.78em">#${c.rank}</span>
+      ${c.flag} ${esc(c.name)} <span style="opacity:0.5;font-size:0.78em">P${c.pot}</span>
       <button class="remove" onclick="removeCountry(${i})">✕</button>
     </div>`).join('');
 }
@@ -497,22 +538,35 @@ function updatePreview() {
   const box = document.getElementById('drawPreview');
   if (!p || !c) { box.innerHTML = ''; return; }
 
-  const perPerson = Math.floor(c / p);
-  const remainder = c % p;
+  if (drawMode === 'pot') {
+    const pots = {1:[],2:[],3:[],4:[]};
+    countries.forEach(t => { if (pots[t.pot]) pots[t.pot].push(t); });
+    const activePots = [1,2,3,4].filter(k => pots[k].length > 0);
+    if (!activePots.length) { box.innerHTML = '⚠️ Load teams with pot data first (use Load All 48 Teams).'; return; }
 
-  if (perPerson === 0) {
-    box.innerHTML = `⚠️ Not enough countries for ${p} people — add more teams.`;
+    // How many full rounds can we do? Each round deals n teams from each pot.
+    const rounds = Math.min(...activePots.map(k => Math.floor(pots[k].length / n)));
+    const teamsPerPerson = rounds * activePots.length;
+    const leftover = activePots.reduce((sum, k) => sum + (pots[k].length % n) + (pots[k].length - Math.floor(pots[k].length / n) * n), 0);
+    const totalLeftover = activePots.reduce((sum, k) => sum + (pots[k].length - rounds * n), 0);
+
+    if (rounds === 0) {
+      box.innerHTML = `⚠️ Not enough teams in each pot for ${p} people — smallest pot needs at least ${p} teams.`;
+      return;
+    }
+    box.innerHTML = `🎩 <strong>${p} people × ${teamsPerPerson} teams each</strong> (${rounds} round${rounds>1?'s':''} × ${activePots.length} pots)${totalLeftover > 0 ? ` · <span style="color:#ff8a8a">${totalLeftover} leftover team${totalLeftover>1?'s':''} dropped (worst-ranked)</span>` : ' · perfect fit'}`;
     return;
   }
 
-  // Which teams will be dropped?
+  // EVEN mode
+  const perPerson = Math.floor(c / p);
+  if (perPerson === 0) { box.innerHTML = `⚠️ Not enough countries for ${p} people — add more teams.`; return; }
   const toDrop = getDropped(countries, p);
-
-  let html = `✅ <strong>${p} people</strong> × <strong>${perPerson} countries each</strong> (${c} total`;
+  let html = `⚖️ <strong>${p} people</strong> × <strong>${perPerson} each</strong> (${c} total`;
   if (toDrop.length) {
     html += `, dropping ${toDrop.length})`;
     html += `<br><span style="font-size:0.82rem;color:rgba(255,255,255,0.5)">Will drop: </span>`;
-    html += toDrop.map(t => `<span class="drop-tag">${t.flag} ${t.name} #${t.rank}</span>`).join('');
+    html += toDrop.map(t => `<span class="drop-tag">${t.flag} ${t.name}</span>`).join('');
   } else {
     html += `, perfect fit)`;
   }
@@ -545,6 +599,13 @@ async function runDraw() {
   if (!countries.length)    { showToast('⚠️ Add at least one country!'); return; }
 
   const n = participants.length;
+
+  if (drawMode === 'pot') {
+    await runPotDraw(n);
+    return;
+  }
+
+  // ── EVEN mode ──
   const perPerson = Math.floor(countries.length / n);
   if (perPerson === 0) { showToast('⚠️ Not enough countries — add more teams!'); return; }
 
@@ -552,28 +613,19 @@ async function runDraw() {
   overlay.classList.add('active');
   await sleep(900 + Math.random()*600);
 
-  // 1. Drop worst-ranked so pool divides evenly
   const dropped = getDropped(countries, n);
   const droppedNames = new Set(dropped.map(d => d.name));
-
-  // 2. Single clean Fisher-Yates shuffle of the filtered pool
   const pool = shuffle(countries.filter(c => !droppedNames.has(c.name)));
-
-  // 3. Shuffle participant order so nobody is always dealt first
   const shuffledParticipants = shuffle(participants);
   const result = shuffledParticipants.map(p => ({name: p.name, countries: [], countryNames: new Set()}));
 
-  // 4. Deal one card at a time, re-randomising seat order each round.
-  //    Skip if this person already holds this country (prevents duplicates).
   let poolIndex = 0;
   for (let round = 0; round < perPerson; round++) {
     const order = shuffle([...Array(n).keys()]);
     for (const seat of order) {
-      // Find the next card in the pool this person doesn't already have
       let found = false;
       for (let attempt = poolIndex; attempt < pool.length; attempt++) {
         if (!result[seat].countryNames.has(pool[attempt].name)) {
-          // Swap it into the current position so pool stays consumable
           [pool[poolIndex], pool[attempt]] = [pool[attempt], pool[poolIndex]];
           result[seat].countries.push(pool[poolIndex]);
           result[seat].countryNames.add(pool[poolIndex].name);
@@ -582,7 +634,6 @@ async function runDraw() {
           break;
         }
       }
-      // Fallback: if every remaining card is a duplicate for this person, just take the next one
       if (!found && poolIndex < pool.length) {
         result[seat].countries.push(pool[poolIndex]);
         result[seat].countryNames.add(pool[poolIndex].name);
@@ -591,12 +642,71 @@ async function runDraw() {
     }
   }
 
-  // Clean up helper sets before storing
   result.forEach(r => delete r.countryNames);
+  lastResults = result;
+  lastDropped = dropped;
+  overlay.classList.remove('active');
+  renderResults(result, dropped);
+  fireConfetti();
+}
+
+// ── POT mode: guaranteed equal number of teams from each pot per person ──────
+async function runPotDraw(n) {
+  const pots = {1:[], 2:[], 3:[], 4:[]};
+  countries.forEach(t => { if (pots[t.pot]) pots[t.pot].push({...t}); });
+  const activePots = [1,2,3,4].filter(k => pots[k].length > 0);
+
+  if (!activePots.length) { showToast('⚠️ No pot data — use Load All 48 Teams'); return; }
+
+  const overlay = document.getElementById('drawOverlay');
+  overlay.classList.add('active');
+  await sleep(900 + Math.random()*600);
+
+  // How many complete rounds fit? = floor(smallest pot / n)
+  const rounds = Math.min(...activePots.map(k => Math.floor(pots[k].length / n)));
+
+  if (rounds === 0) {
+    overlay.classList.remove('active');
+    showToast(`⚠️ Not enough teams — need at least ${n} per pot`);
+    return;
+  }
+
+  // Shuffle each pot, keep only rounds*n teams, drop the rest (worst-ranked)
+  const dropped = [];
+  const trimmedPots = {};
+  activePots.forEach(k => {
+    const shuffled = shuffle(pots[k]);
+    const keep = rounds * n;
+    // Drop worst-ranked from this pot (sort by rank desc, take tail as dropped)
+    const sorted = [...shuffled].sort((a,b) => b.rank - a.rank);
+    const toKeep = new Set(sorted.slice(pots[k].length - keep).map(t => t.name));
+    dropped.push(...sorted.slice(0, pots[k].length - keep));
+    trimmedPots[k] = shuffled.filter(t => toKeep.has(t.name));
+  });
+  dropped.sort((a,b) => b.rank - a.rank);
+
+  // Assign: for each pot, split into n equal chunks of `rounds` teams.
+  // Each person gets one chunk from each pot — guaranteeing equal pot representation.
+  const result = shuffle(participants).map(p => ({name: p.name, countries: []}));
+
+  activePots.forEach(k => {
+    // Divide this pot's teams into n chunks (one chunk per person)
+    const pool = shuffle(trimmedPots[k]); // re-shuffle for extra randomness
+    const chunks = Array.from({length: n}, (_, i) =>
+      pool.slice(i * rounds, (i + 1) * rounds)
+    );
+    // Randomly assign chunks to people
+    const assignment = shuffle([...Array(n).keys()]);
+    assignment.forEach((chunkIdx, seat) => {
+      result[seat].countries.push(...chunks[chunkIdx]);
+    });
+  });
+
+  // Sort each person's teams by pot then rank for clean display
+  result.forEach(r => r.countries.sort((a,b) => a.pot - b.pot || a.rank - b.rank));
 
   lastResults = result;
   lastDropped = dropped;
-
   overlay.classList.remove('active');
   renderResults(result, dropped);
   fireConfetti();
@@ -613,7 +723,7 @@ function renderResults(result, dropped) {
     <div class="result-item" style="animation-delay:${i*55}ms">
       <div class="result-person">👤 ${esc(r.name)}</div>
       <div class="result-gets">draws</div>
-      ${r.countries.map(c => `<div class="result-country">${c.flag} ${esc(c.name)}</div>`).join('')}
+      ${r.countries.map(c => `<div class="result-country">${c.flag} ${esc(c.name)}${drawMode==='pot' && c.pot ? ` <span class="pot-tag">P${c.pot}</span>` : ''}</div>`).join('')}
     </div>`).join('');
 
   // Dropped teams
