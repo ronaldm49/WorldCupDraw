@@ -455,13 +455,13 @@ function setMode(m) {
 // ─── Init ────────────────────────────────────────────────────────────────────
 (function init() {
   populateCountrySelect();
-  // Always load storage (cookie check only gates saving, not reading)
+  loadAllCountries(true); // default to all 48 teams, no toast
   savedData = loadFromStorage();
   if (cookiesAccepted()) {
     document.getElementById('cookieBanner').remove();
     loadSavedSweepstakes();
   } else {
-    loadSavedSweepstakes(); // show any previously saved (before consent was stored)
+    loadSavedSweepstakes();
   }
   document.getElementById('personInput').addEventListener('keydown', e => { if(e.key==='Enter') addPerson(); });
   document.getElementById('countrySelect').addEventListener('keydown', e => { if(e.key==='Enter') addCountry(); });
@@ -516,10 +516,10 @@ function addCountry() {
 }
 function removeCountry(i) { countries.splice(i,1); renderCountries(); updatePreview(); }
 function clearCountries()  { countries = []; renderCountries(); updatePreview(); }
-function loadAllCountries() {
+function loadAllCountries(silent=false) {
   countries = ALL_COUNTRIES.map(c => ({...c}));
   renderCountries(); updatePreview();
-  showToast('All 48 teams loaded!');
+  if (!silent) showToast('All 48 teams loaded!');
 }
 function renderCountries() {
   const list = document.getElementById('countryList');
