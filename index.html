@@ -341,10 +341,10 @@
     <button onclick="toggleFair()">how it works</button>
   </div>
   <div class="fair-detail" id="fairDetail">
-    <strong>1. Official pots.</strong> All 48 teams sit in their real 2026 draw pots — Pot 1 holds the giants (and the three hosts), Pot 4 the underdogs.<br>
-    <strong>2. Equal share from every pot.</strong> Each player receives the same number of teams from each pot. Nobody lands two favourites; nobody gets only minnows.<br>
-    <strong>3. Strength-balanced bundles.</strong> Inside each pot, teams are bundled snake-draft style by FIFA rank, so every bundle is worth almost exactly the same. Bundles are then dealt at random.<br>
-    <strong>4. Leftovers drop fairly.</strong> If teams don't divide evenly, the lowest-ranked are set aside and listed openly under the results.
+    <strong>1. Ranked field.</strong> All 48 qualified teams carry their FIFA world ranking, from Argentina at the top to the underdogs.<br>
+    <strong>2. Strength-balanced bundles.</strong> Teams are bundled snake-draft style by ranking — first lap deals best-to-worst, next lap reverses — so every bundle is worth almost exactly the same and everyone gets a real mix of favourites, mid-tier sides and dark horses.<br>
+    <strong>3. Random assignment.</strong> Which player receives which bundle is completely random, every draw.<br>
+    <strong>4. Minimal, transparent drops.</strong> If teams don't divide evenly, only the remainder is set aside — always the lowest-ranked, always fewer than the number of players, and always listed openly under the results.
   </div>
 
   <!-- Saved -->
@@ -537,73 +537,54 @@ function updatePreview(){
   const p=participants.length, c=countries.length;
   const box=document.getElementById('preview');
   if(!p||!c){box.innerHTML='';return;}
-  const pots={1:[],2:[],3:[],4:[]};
-  countries.forEach(t=>{if(pots[t.pot])pots[t.pot].push(t);});
-  const active=[1,2,3,4].filter(k=>pots[k].length>0);
-  const rounds=Math.min(...active.map(k=>Math.floor(pots[k].length/p)));
-  if(rounds===0){box.innerHTML=`⚠️ Not enough teams in every pot for <strong>${p}</strong> players — the smallest pot needs at least ${p} teams.`;return;}
-  const each=rounds*active.length;
-  const totalLeft=active.reduce((s,k)=>s+(pots[k].length-rounds*p),0);
-  let html=`<strong>${p} players</strong> · <strong>${each} teams each</strong> (${rounds} from each pot)`;
-  if(totalLeft>0){
-    // which teams will be set aside: worst-ranked per pot
-    const aside=[];
-    active.forEach(k=>{
-      const excess=pots[k].length-rounds*p;
-      if(excess>0){
-        const worst=[...pots[k]].sort((a,b)=>b.rank-a.rank).slice(0,excess);
-        aside.push(...worst);
-      }
-    });
-    aside.sort((a,b)=>b.rank-a.rank);
-    html+=` · ${totalLeft} set aside:<br>`+aside.map(t=>`<span class="drop-chip">${t.flag} ${t.name}</span>`).join('');
+  if(c<p){box.innerHTML=`⚠️ Need at least <strong>${p}</strong> teams for <strong>${p}</strong> players.`;return;}
+  const perPlayer=Math.floor(c/p);
+  const dropCount=c-perPlayer*p;
+  let html=`<strong>${p} players</strong> · <strong>${perPlayer} teams each</strong>`;
+  if(dropCount>0){
+    const aside=[...countries].sort((a,b)=>b.rank-a.rank).slice(0,dropCount);
+    html+=` · only ${dropCount} set aside:<br>`+aside.map(t=>`<span class="drop-chip">${t.flag} ${t.name}</span>`).join('');
   } else { html+=' · perfect fit, nothing dropped'; }
   box.innerHTML=html;
 }
 
-// ─── Draw: snake-draft bundles per pot, randomly dealt ───────────────────────
+// ─── Draw: minimal drops + global snake draft by FIFA rank ───────────────────
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 async function runDraw(){
   if(!participants.length){showToast('Add at least one player');return;}
   if(!countries.length){showToast('Add at least one team');return;}
   const n=participants.length;
-
-  const pots={1:[],2:[],3:[],4:[]};
-  countries.forEach(t=>{if(pots[t.pot])pots[t.pot].push({...t});});
-  const active=[1,2,3,4].filter(k=>pots[k].length>0);
-  const rounds=Math.min(...active.map(k=>Math.floor(pots[k].length/n)));
-  if(rounds===0){showToast(`Smallest pot needs at least ${n} teams`);return;}
+  if(countries.length<n){showToast(`Need at least ${n} teams for ${n} players`);return;}
 
   const overlay=document.getElementById('drawOverlay');
   overlay.classList.add('active');
   await sleep(1000+Math.random()*500);
 
-  const dropped=[];
+  // 1. Drop ONLY the remainder — the worst-ranked teams. Never more than n-1.
+  const sorted=[...countries].sort((a,b)=>a.rank-b.rank); // best first
+  const perPlayer=Math.floor(sorted.length/n);
+  const keepCount=perPlayer*n;
+  const kept=sorted.slice(0,keepCount);
+  const dropped=sorted.slice(keepCount); // worst-ranked, at most n-1 teams
+
+  // 2. Snake-draft the kept teams (already sorted best→worst) into n bundles.
+  //    Each "lap" hands one team to every player, alternating direction, so
+  //    bundle strengths come out nearly identical AND everyone gets a natural
+  //    mix of favourites, mid-tier and underdogs.
+  const bundles=Array.from({length:n},()=>[]);
+  kept.forEach((team,idx)=>{
+    const lap=Math.floor(idx/n);
+    const pos=idx%n;
+    const target=(lap%2===0)?pos:(n-1-pos);
+    bundles[target].push(team);
+  });
+
+  // 3. Randomly assign bundles to (shuffled) players
   const result=shuffle(participants).map(p=>({name:p.name,countries:[]}));
-
-  active.forEach(k=>{
-    // 1. Set aside worst-ranked excess from this pot
-    const sorted=[...pots[k]].sort((a,b)=>a.rank-b.rank); // best first
-    const keep=rounds*n;
-    const kept=sorted.slice(0,keep);
-    dropped.push(...sorted.slice(keep));
-
-    // 2. Snake-draft into n bundles so each bundle's strength is near-identical.
-    //    Order: best→worst, deal 0,1,...,n-1, then n-1,...,1,0, repeating.
-    const bundles=Array.from({length:n},()=>[]);
-    kept.forEach((team,idx)=>{
-      const round=Math.floor(idx/n);
-      const pos=idx%n;
-      const target=(round%2===0)?pos:(n-1-pos);
-      bundles[target].push(team);
-    });
-
-    // 3. Shuffle which player receives which bundle
-    const assign=shuffle([...Array(n).keys()]);
-    assign.forEach((bundleIdx,seat)=>{
-      result[seat].countries.push(...bundles[bundleIdx]);
-    });
+  const assign=shuffle([...Array(n).keys()]);
+  assign.forEach((bundleIdx,seat)=>{
+    result[seat].countries.push(...bundles[bundleIdx]);
   });
 
   dropped.sort((a,b)=>b.rank-a.rank);
