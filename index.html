@@ -3,962 +3,799 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Cup Sweepstakes</title>
+<title>World Cup Sweepstakes 2026 — Fair Draw Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --pitch: #1a5c2a;
-    --pitch-light: #236b33;
-    --pitch-dark: #0f3a19;
-    --gold: #f5c842;
-    --gold-dark: #d4a520;
-    --red: #e03030;
-    --white: #f8f8f2;
-    --shadow: 0 8px 32px rgba(0,0,0,0.22);
+    --night: #081f12;
+    --pitch: #0e3320;
+    --pitch-line: #1c5436;
+    --flood: #f6c945;
+    --flood-dim: #c79a23;
+    --chalk: #f4f2e9;
+    --chalk-dim: rgba(244,242,233,0.55);
+    --card-red: #e04545;
+    --ticket: #f7f3e8;
+    --ticket-ink: #18261c;
     --radius: 14px;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--pitch-dark);
-    color: var(--white);
+    background: var(--night);
+    color: var(--chalk);
     min-height: 100vh;
     overflow-x: hidden;
   }
+
+  /* Floodlight glow + pitch stripes */
   body::before {
     content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(180deg, var(--pitch) 0px, var(--pitch) 60px, var(--pitch-light) 60px, var(--pitch-light) 120px);
-    opacity: 0.55; z-index: 0; pointer-events: none;
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% -5%, rgba(246,201,69,0.13), transparent 60%),
+      repeating-linear-gradient(180deg, var(--pitch) 0 70px, #11402a 70px 140px);
+    opacity: 0.75;
   }
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 70%);
-    z-index: 0; pointer-events: none;
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 16px 90px; }
+
+  /* ── Scoreboard header ── */
+  header { text-align: center; padding: 44px 0 10px; }
+  .kick { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 4px; color: var(--flood); text-transform: uppercase; }
+  h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(2.1rem, 6.5vw, 4rem);
+    line-height: 1.02;
+    text-transform: uppercase;
+    margin: 10px 0 6px;
+    letter-spacing: -1px;
   }
-  .container { position: relative; z-index: 1; max-width: 940px; margin: 0 auto; padding: 0 16px 80px; }
+  h1 .accent { color: var(--flood); }
+  .strap { font-size: 0.95rem; color: var(--chalk-dim); max-width: 460px; margin: 0 auto; line-height: 1.55; }
 
-  /* Header */
-  header { text-align: center; padding: 38px 0 18px; }
-  .trophy { font-size: 52px; display: block; margin-bottom: 4px; filter: drop-shadow(0 4px 18px rgba(245,200,66,0.6)); animation: float 3.2s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem,7vw,5rem); letter-spacing: 3px; color: var(--gold); text-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 2px 0 var(--gold-dark); line-height: 1; }
-  .subtitle { font-family: 'Teko', sans-serif; font-size: 1.2rem; letter-spacing: 4px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-top: 6px; }
-  .header-coffee { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 11px 24px; background: #FFDD00; color: #000; font-weight: 800; font-size: 1rem; border-radius: 30px; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(0,0,0,0.3); animation: coffeePulse 2.2s ease-in-out infinite; }
-  .header-coffee:hover { transform: translateY(-2px) scale(1.03); }
-  @keyframes coffeePulse { 0%,100%{box-shadow:0 4px 16px rgba(0,0,0,0.3)} 50%{box-shadow:0 6px 26px rgba(255,221,0,0.6)} }
+  .header-coffee {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 18px; padding: 10px 22px;
+    background: #FFDD00; color: #111; font-weight: 700; font-size: 0.92rem;
+    border-radius: 30px; text-decoration: none;
+    box-shadow: 0 4px 18px rgba(255,221,0,0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .header-coffee:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(255,221,0,0.4); }
 
-  /* Cards */
-  .card { background: rgba(255,255,255,0.10); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius); padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow); }
-  .card-title { font-family: 'Teko', sans-serif; font-size: 1.55rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 9px; }
+  /* ── Fairness strip ── */
+  .fair-strip {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 26px auto 30px; padding: 11px 18px; max-width: 620px;
+    border: 1px dashed rgba(246,201,69,0.45); border-radius: 10px;
+    font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--flood);
+    background: rgba(246,201,69,0.06);
+    flex-wrap: wrap; text-align: center;
+  }
+  .fair-strip button {
+    background: none; border: none; color: var(--flood); font-family: inherit; font-size: inherit;
+    text-decoration: underline; cursor: pointer; padding: 0;
+  }
 
-  /* Forms */
-  label { display: block; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.5px; color: rgba(255,255,255,0.7); margin-bottom: 5px; text-transform: uppercase; }
+  .fair-detail {
+    display: none; max-width: 620px; margin: -16px auto 30px; padding: 16px 20px;
+    background: rgba(0,0,0,0.35); border-radius: 10px; font-size: 0.86rem; line-height: 1.65; color: var(--chalk-dim);
+  }
+  .fair-detail.open { display: block; }
+  .fair-detail strong { color: var(--chalk); }
+
+  /* ── Cards / sections ── */
+  .panel {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius);
+    padding: 26px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.3);
+  }
+  .panel-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.02rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--flood);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .panel-title .step {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    border: 1px solid var(--flood); border-radius: 50%;
+    width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  label { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 1.2px; color: var(--chalk-dim); margin-bottom: 6px; text-transform: uppercase; }
   input[type="text"], input[type="number"], select {
-    width: 100%; padding: 11px 14px; border: 1.5px solid rgba(255,255,255,0.18); border-radius: 9px;
-    background: rgba(0,0,0,0.3); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.97rem; outline: none; transition: border-color 0.2s;
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid rgba(255,255,255,0.16); border-radius: 9px;
+    background: rgba(0,0,0,0.35); color: var(--chalk);
+    font-family: 'DM Sans', sans-serif; font-size: 0.97rem; outline: none;
+    transition: border-color 0.2s;
   }
-  input:focus, select:focus { border-color: var(--gold); background: rgba(0,0,0,0.45); }
-  select option { background: #1a3d25; color: #fff; }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--flood); outline-offset: 2px; }
+  input:focus, select:focus { border-color: var(--flood); }
+  select option { background: #11402a; color: var(--chalk); }
 
-  /* Buttons */
-  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: transform 0.13s, box-shadow 0.13s; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 22px; border: none; border-radius: 9px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    transition: transform 0.13s, box-shadow 0.13s;
+  }
   .btn:active { transform: scale(0.97); }
-  .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #1a1a1a; box-shadow: 0 4px 16px rgba(245,200,66,0.4); }
-  .btn-gold:hover { box-shadow: 0 6px 24px rgba(245,200,66,0.55); transform: translateY(-1px); }
-  .btn-green { background: linear-gradient(135deg, #2d9642, #1a6b2d); color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-  .btn-green:hover { transform: translateY(-1px); }
-  .btn-red { background: linear-gradient(135deg, #e03030, #a02020); color: #fff; }
-  .btn-red:hover { transform: translateY(-1px); }
-  .btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.3); color: var(--white); }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+  .btn-flood { background: linear-gradient(135deg, var(--flood), var(--flood-dim)); color: #161208; box-shadow: 0 4px 18px rgba(246,201,69,0.35); }
+  .btn-flood:hover { box-shadow: 0 7px 26px rgba(246,201,69,0.5); transform: translateY(-1px); }
+  .btn-green { background: #1d7a42; color: #fff; }
+  .btn-green:hover { background: #229049; transform: translateY(-1px); }
+  .btn-red { background: var(--card-red); color: #fff; }
+  .btn-ghost { background: transparent; border: 1.5px solid rgba(255,255,255,0.28); color: var(--chalk); }
+  .btn-ghost:hover { border-color: var(--flood); color: var(--flood); }
+  .btn-sm { padding: 7px 13px; font-size: 0.8rem; }
 
-  /* Layout */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .add-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .add-row input, .add-row select { flex: 1; min-width: 120px; }
-  .controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
-  .divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0; }
-  .section-note { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .add-row { display: flex; gap: 9px; margin-bottom: 13px; }
+  .add-row input, .add-row select { flex: 1; min-width: 0; }
+  .controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
 
-  /* Pills */
-  .list-scroll { max-height: 240px; overflow-y: auto; padding-right: 4px; }
-  .list-scroll::-webkit-scrollbar { width: 5px; }
-  .list-scroll::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
-  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border: 1px solid rgba(255,255,255,0.18); border-radius: 30px; font-size: 0.88rem; font-weight: 500; animation: popIn 0.2s ease; }
-  @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
-  .pill .remove { cursor: pointer; color: rgba(255,255,255,0.45); font-size: 0.85em; background: none; border: none; padding: 0; transition: color 0.15s; }
-  .pill .remove:hover { color: var(--red); }
-  .country-pill { background: rgba(26,92,42,0.55); border-color: rgba(245,200,66,0.3); }
-  .person-pill  { background: rgba(20,60,100,0.55); border-color: rgba(120,180,255,0.3); }
-
-  /* Mode toggle */
-  .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 520px) { .mode-toggle { grid-template-columns: 1fr; } }
-  .mode-btn {
-    display: flex; flex-direction: column; gap: 4px; text-align: left;
-    padding: 13px 16px; border-radius: 11px; cursor: pointer;
-    background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.12);
-    color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.97rem; font-weight: 700;
-    transition: border-color 0.18s, background 0.18s;
+  .hint { font-size: 0.8rem; color: var(--chalk-dim); margin-bottom: 12px; line-height: 1.5; }
+  .count-chip {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem;
+    background: var(--flood); color: #161208; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px; margin-left: 6px;
   }
-  .mode-btn span { font-size: 0.78rem; font-weight: 400; color: rgba(255,255,255,0.55); line-height: 1.4; }
-  .mode-btn:hover { border-color: rgba(245,200,66,0.4); }
-  .mode-btn.active { border-color: var(--gold); background: rgba(245,200,66,0.1); }
-  .mode-btn.active span { color: rgba(255,255,255,0.75); }
 
-  /* Pot grouping in results */
-  .pot-tag { font-size: 0.68rem; opacity: 0.55; font-weight: 700; letter-spacing: 0.5px; }
-
-  /* Draw preview bar */
-  .draw-preview {
-    margin-top: 16px; padding: 12px 16px; border-radius: 10px;
-    background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
-    font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.5; min-height: 20px;
+  /* pills */
+  .scroll-list { max-height: 230px; overflow-y: auto; padding-right: 4px; }
+  .scroll-list::-webkit-scrollbar { width: 5px; }
+  .scroll-list::-webkit-scrollbar-thumb { background: var(--flood-dim); border-radius: 4px; }
+  .pill-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px 5px 9px; border-radius: 30px;
+    font-size: 0.85rem; font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.16);
+    animation: popIn 0.18s ease;
   }
-  .draw-preview:empty { display: none; }
-  .drop-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(224,48,48,0.2); border: 1px solid rgba(224,48,48,0.4); border-radius: 20px; padding: 2px 8px; font-size: 0.8rem; color: #ff8a8a; margin: 2px; }
+  @keyframes popIn { from{transform:scale(0.75);opacity:0} to{transform:scale(1);opacity:1} }
+  .pill button { background:none; border:none; cursor:pointer; color: rgba(244,242,233,0.4); font-size:0.82em; padding:0; transition: color 0.15s; }
+  .pill button:hover { color: var(--card-red); }
+  .pill-person  { background: rgba(35,80,130,0.45); }
+  .pill-country { background: rgba(28,84,54,0.55); }
+  .pot-chip { font-family:'Space Mono',monospace; font-size:0.62rem; opacity:0.6; }
 
-  /* Qty badge */
-  .qty-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #111; font-size: 0.78rem; font-weight: 700; margin-left: 4px; }
+  .empty { text-align: center; color: rgba(244,242,233,0.3); padding: 18px 0; font-size: 0.88rem; }
 
-  /* Results */
-  #resultsCard { display: none; }
-  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; }
-  .result-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 16px; text-align: center; animation: slideUp 0.3s ease both; transition: transform 0.15s; }
-  .result-item:hover { transform: translateY(-3px); }
-  @keyframes slideUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
-  .result-person { font-family: 'Teko', sans-serif; font-size: 1.35rem; font-weight: 600; color: var(--white); }
-  .result-gets { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin: 2px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
-  .result-country { display: inline-flex; align-items: center; gap: 6px; background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.35); border-radius: 20px; padding: 4px 12px; font-size: 0.88rem; font-weight: 600; color: var(--gold); margin: 3px 2px; }
+  /* preview bar */
+  .preview {
+    margin-top: 16px; padding: 13px 16px; border-radius: 10px;
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.87rem; line-height: 1.6; color: var(--chalk-dim);
+  }
+  .preview:empty { display: none; }
+  .preview strong { color: var(--chalk); }
+  .drop-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(224,69,69,0.16); border: 1px solid rgba(224,69,69,0.4);
+    border-radius: 20px; padding: 2px 9px; font-size: 0.76rem; color: #ff9a9a; margin: 2px;
+  }
 
-  /* Dropped teams section */
-  .dropped-section { margin-top: 18px; padding: 14px 16px; border-radius: 10px; background: rgba(224,48,48,0.1); border: 1px solid rgba(224,48,48,0.3); }
-  .dropped-title { font-family: 'Teko', sans-serif; font-size: 1.1rem; color: #ff8a8a; letter-spacing: 1px; margin-bottom: 8px; }
-  .dropped-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  /* ══ TICKETS — the signature ══ */
+  #resultsPanel { display: none; }
+  .tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 18px; }
 
-  /* Coffee prompt */
-  .coffee-prompt { margin-top: 26px; padding: 24px 20px; border-radius: 16px; background: linear-gradient(135deg, rgba(255,221,0,0.16), rgba(95,127,255,0.14)); border: 2px dashed rgba(255,221,0,0.55); text-align: center; opacity: 0; transform: translateY(20px); }
-  .coffee-prompt.reveal { animation: coffeeReveal 0.6s cubic-bezier(.22,1,.36,1) 0.4s forwards; }
-  @keyframes coffeeReveal { to{opacity:1;transform:translateY(0)} }
-  .coffee-prompt p { font-family: 'Teko', sans-serif; font-size: 1.7rem; letter-spacing: 1px; color: #fff; margin-bottom: 16px; }
-  .coffee-btn-large { display: inline-flex; align-items: center; gap: 10px; padding: 16px 38px; background: #FFDD00; color: #000; font-weight: 800; font-size: 1.2rem; border-radius: 34px; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 6px 22px rgba(255,221,0,0.45); animation: coffeePulse 2.2s ease-in-out infinite; }
-  .coffee-btn-large:hover { transform: translateY(-3px) scale(1.05); }
-  .coffee-btn-large span { font-size: 1.3em; animation: steam 2s ease-in-out infinite; }
-  @keyframes steam { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-2px) rotate(-6deg)} }
-  .coffee-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 16px; }
+  .ticket {
+    position: relative;
+    background: var(--ticket);
+    color: var(--ticket-ink);
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+    animation: ticketIn 0.45s cubic-bezier(.2,.9,.3,1.1) both;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.45);
+  }
+  @keyframes ticketIn { from { transform: translateY(30px) rotate(-1.5deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* punch-hole perforation strip */
+  .ticket::before {
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: 13px; width: 0;
+    border-left: 2px dashed rgba(24,38,28,0.25);
+  }
+  .ticket-inner { padding: 16px 16px 14px 30px; }
+
+  .ticket-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--ticket-ink); padding-bottom: 8px; margin-bottom: 10px; }
+  .ticket-name { font-family: 'Archivo Black', sans-serif; font-size: 1.12rem; text-transform: uppercase; letter-spacing: 0.3px; }
+  .ticket-serial { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: rgba(24,38,28,0.5); }
+
+  .ticket-team {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0; font-size: 0.93rem; font-weight: 600;
+    border-bottom: 1px dotted rgba(24,38,28,0.2);
+  }
+  .ticket-team:last-of-type { border-bottom: none; }
+  .ticket-team .flag { font-size: 1.15em; }
+  .ticket-team .pot { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 0.62rem; color: rgba(24,38,28,0.45); }
+
+  .strength { margin-top: 12px; }
+  .strength-label { display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; color: rgba(24,38,28,0.55); margin-bottom: 4px; }
+  .strength-bar { height: 7px; background: rgba(24,38,28,0.12); border-radius: 4px; overflow: hidden; }
+  .strength-fill { height: 100%; background: linear-gradient(90deg, #1d7a42, var(--flood-dim)); border-radius: 4px; transition: width 0.8s cubic-bezier(.2,.8,.3,1); }
+
+  /* dropped strip */
+  .dropped-box { margin-top: 18px; padding: 13px 16px; border-radius: 10px; background: rgba(224,69,69,0.1); border: 1px solid rgba(224,69,69,0.3); }
+  .dropped-box h4 { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: #ff9a9a; margin-bottom: 8px; }
+
+  /* coffee block */
+  .coffee-zone {
+    margin-top: 26px; padding: 24px 20px; border-radius: 14px; text-align: center;
+    background: linear-gradient(135deg, rgba(255,221,0,0.14), rgba(246,201,69,0.05));
+    border: 2px dashed rgba(255,221,0,0.5);
+    opacity: 0; transform: translateY(18px);
+  }
+  .coffee-zone.reveal { animation: rise 0.55s cubic-bezier(.22,1,.36,1) 0.5s forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .coffee-zone p { font-family: 'Archivo Black', sans-serif; font-size: 1.05rem; text-transform: uppercase; margin-bottom: 14px; }
+  .coffee-big {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 34px; background: #FFDD00; color: #111;
+    font-weight: 800; font-size: 1.1rem; border-radius: 34px; text-decoration: none;
+    box-shadow: 0 6px 22px rgba(255,221,0,0.4);
+    transition: transform 0.15s;
+  }
+  .coffee-big:hover { transform: translateY(-3px) scale(1.04); }
+  .coffee-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 15px; }
   .coffee-qr img { border-radius: 12px; background: #fff; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-  .coffee-qr span { font-size: 0.8rem; color: rgba(255,255,255,0.55); }
+  .coffee-qr span { font-size: 0.78rem; color: var(--chalk-dim); }
 
-  /* Saved sweepstakes */
-  .saved-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
-  .saved-name { font-weight: 600; font-size: 0.97rem; }
-  .saved-meta { font-size: 0.78rem; color: rgba(255,255,255,0.5); }
+  /* saved */
+  .saved-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    padding: 12px 15px; margin-bottom: 8px;
+    background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px;
+  }
+  .saved-row .meta { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--chalk-dim); }
 
-  /* Toast */
-  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #111; font-weight: 700; padding: 12px 28px; border-radius: 30px; z-index: 9999; transition: transform 0.35s cubic-bezier(.22,1,.36,1); box-shadow: 0 6px 28px rgba(0,0,0,0.4); white-space: nowrap; font-size: 0.95rem; }
+  /* toast */
+  .toast {
+    position: fixed; bottom: 26px; left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: var(--flood); color: #161208; font-weight: 700;
+    padding: 12px 26px; border-radius: 30px; z-index: 9999;
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.45); font-size: 0.92rem; white-space: nowrap;
+  }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* Draw overlay */
-  #drawOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center; flex-direction: column; gap: 18px; text-align: center; padding: 20px; }
+  /* draw overlay */
+  #drawOverlay {
+    display: none; position: fixed; inset: 0; z-index: 5000;
+    background: rgba(4,16,9,0.92);
+    align-items: center; justify-content: center; flex-direction: column; gap: 22px; text-align: center;
+  }
   #drawOverlay.active { display: flex; }
-  .draw-spinner { width: 72px; height: 72px; border: 6px solid rgba(245,200,66,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  .draw-text { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; color: var(--gold); letter-spacing: 4px; animation: pulse 0.8s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .ball { font-size: 64px; animation: bounce 0.6s ease-in-out infinite alternate; }
+  @keyframes bounce { from { transform: translateY(-18px) rotate(-20deg); } to { transform: translateY(10px) rotate(20deg); } }
+  .draw-msg { font-family: 'Archivo Black', sans-serif; font-size: 1.6rem; text-transform: uppercase; color: var(--flood); letter-spacing: 2px; }
 
-  /* Cookie banner */
-  #cookieBanner { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,30,15,0.97); border-top: 2px solid rgba(245,200,66,0.4); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; z-index: 10000; flex-wrap: wrap; backdrop-filter: blur(10px); }
-  #cookieBanner p { font-size: 0.88rem; color: rgba(255,255,255,0.8); max-width: 660px; line-height: 1.5; }
+  /* cookie banner */
+  #cookieBanner {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10000;
+    background: rgba(6,22,13,0.98); border-top: 2px solid rgba(246,201,69,0.4);
+    padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+  }
+  #cookieBanner p { font-size: 0.85rem; color: var(--chalk-dim); max-width: 640px; line-height: 1.5; }
 
-  /* Misc */
-  .empty-state { text-align: center; color: rgba(255,255,255,0.35); padding: 20px 0; font-size: 0.92rem; }
+  canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
 
-  /* Responsive */
-  @media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
-  @media (max-width: 520px) {
-    .card { padding: 16px 13px; }
-    .add-row { flex-direction: column; }
-    .add-row input, .add-row select, .add-row .btn { width: 100%; justify-content: center; }
+  /* responsive */
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+    .panel { padding: 18px 14px; }
+    .add-row { flex-wrap: wrap; }
+    .add-row .btn { width: 100%; }
     .controls-row { flex-direction: column; align-items: stretch; }
-    .controls-row .btn { width: 100%; justify-content: center; }
-    .results-grid { grid-template-columns: 1fr 1fr; }
-    .saved-item { flex-direction: column; align-items: flex-start; }
-    .saved-item > div:last-child { display: flex; width: 100%; }
-    .saved-item .btn { flex: 1; justify-content: center; }
+    .controls-row .btn { width: 100%; }
+    .tickets { grid-template-columns: 1fr; }
     #cookieBanner { flex-direction: column; text-align: center; }
     #cookieBanner > div { width: 100%; display: flex; gap: 8px; }
-    #cookieBanner .btn { flex: 1; justify-content: center; }
+    #cookieBanner .btn { flex: 1; }
   }
-  @media (max-width: 360px) { .results-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:999"></canvas>
+<canvas id="confetti"></canvas>
 
-<div id="drawOverlay">
-  <div class="draw-spinner"></div>
-  <div class="draw-text">Drawing...</div>
+<div id="drawOverlay" role="status" aria-live="polite">
+  <div class="ball">⚽</div>
+  <div class="draw-msg">Drawing the pots…</div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
 
-<div class="container">
+<div class="wrap">
 
-  <!-- Header -->
   <header>
-    <span class="trophy">🏆</span>
-    <h1>World Cup Sweepstakes</h1>
-    <div class="subtitle">2026 · The Ultimate Draw Generator</div>
-    <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="header-coffee">
-      <span>☕</span> Buy Me a Coffee
-    </a>
+    <div class="kick">FIFA World Cup 2026 · Canada / Mexico / USA</div>
+    <h1>The <span class="accent">Sweepstakes</span><br>Draw Machine</h1>
+    <p class="strap">Add your mates, hit draw, and everyone gets a fair share of favourites, dark horses and underdogs. Then fire the tickets into the group chat.</p>
+    <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="header-coffee">☕ Buy Me a Coffee</a>
   </header>
 
-  <!-- Saved sweepstakes -->
-  <div class="card" id="savedCard">
-    <div class="card-title">📋 Saved Sweepstakes <span class="qty-badge" id="savedCount">0</span></div>
-    <div id="savedList"><div class="empty-state">No saved sweepstakes yet — run a draw below!</div></div>
+  <div class="fair-strip">
+    ⚖ CERTIFIED FAIR DRAW — every squad balanced by FIFA rank
+    <button onclick="toggleFair()">how it works</button>
   </div>
+  <div class="fair-detail" id="fairDetail">
+    <strong>1. Official pots.</strong> All 48 teams sit in their real 2026 draw pots — Pot 1 holds the giants (and the three hosts), Pot 4 the underdogs.<br>
+    <strong>2. Equal share from every pot.</strong> Each player receives the same number of teams from each pot. Nobody lands two favourites; nobody gets only minnows.<br>
+    <strong>3. Strength-balanced bundles.</strong> Inside each pot, teams are bundled snake-draft style by FIFA rank, so every bundle is worth almost exactly the same. Bundles are then dealt at random.<br>
+    <strong>4. Leftovers drop fairly.</strong> If teams don't divide evenly, the lowest-ranked are set aside and listed openly under the results.
+  </div>
+
+  <!-- Saved -->
+  <section class="panel" id="savedPanel">
+    <div class="panel-title">📋 Saved draws <span class="count-chip" id="savedCount">0</span></div>
+    <div id="savedList"><div class="empty">Nothing saved yet — run your first draw below.</div></div>
+  </section>
 
   <!-- Setup -->
-  <div class="card">
-    <div class="card-title">⚙️ Setup Your Sweepstake</div>
+  <section class="panel">
+    <div class="panel-title"><span class="step">1</span> Name your sweepstake</div>
+    <input type="text" id="sweepName" placeholder="e.g. Office World Cup 2026" maxlength="60">
+  </section>
 
-    <div style="margin-bottom:16px">
-      <label>Sweepstake Name</label>
-      <input type="text" id="sweepName" placeholder="e.g. Office World Cup 2026" maxlength="60">
-    </div>
-
+  <section class="panel">
     <div class="two-col">
-      <!-- Participants -->
       <div>
-        <div class="card-title" style="font-size:1.15rem">👥 Participants <span class="qty-badge" id="pCount">0</span></div>
-        <div class="section-note">Countries are split evenly between participants.</div>
+        <div class="panel-title"><span class="step">2</span> Players <span class="count-chip" id="pCount">0</span></div>
+        <p class="hint">Everyone gets the same number of teams, balanced across the pots.</p>
         <div class="add-row">
-          <input type="text" id="personInput" placeholder="Enter name..." maxlength="40">
-          <button class="btn btn-green btn-sm" onclick="addPerson()">+ Add</button>
+          <input type="text" id="personInput" placeholder="Add a name…" maxlength="40">
+          <button class="btn btn-green btn-sm" onclick="addPerson()">Add</button>
         </div>
-        <div class="list-scroll">
-          <div class="pill-list" id="personList">
-            <div class="empty-state" id="personEmpty">No participants yet</div>
-          </div>
-        </div>
+        <div class="scroll-list"><div class="pill-list" id="personList"><div class="empty">No players yet</div></div></div>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="loadPresetParticipants()">📋 Example Names</button>
-          <button class="btn btn-outline btn-sm" onclick="clearPeople()">🗑 Clear</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearPeople()">Clear players</button>
         </div>
       </div>
-
-      <!-- Countries -->
       <div>
-        <div class="card-title" style="font-size:1.15rem">🌍 Countries <span class="qty-badge" id="cCount">0</span></div>
-        <div class="section-note">Sorted by FIFA rank. Lowest-ranked teams drop if needed.</div>
+        <div class="panel-title"><span class="step">3</span> Teams <span class="count-chip" id="cCount">0</span></div>
+        <p class="hint">All 48 qualified teams are in by default. Remove any you don't want, or re-add below.</p>
         <div class="add-row">
-          <select id="countrySelect" style="flex:1"></select>
-          <input type="number" id="countryQty" value="1" min="1" max="20" style="width:64px;flex:none">
-          <button class="btn btn-green btn-sm" onclick="addCountry()">+ Add</button>
+          <select id="countrySelect"></select>
+          <button class="btn btn-green btn-sm" onclick="addCountry()">Add</button>
         </div>
-        <div class="list-scroll">
-          <div class="pill-list" id="countryList">
-            <div class="empty-state" id="countryEmpty">No countries yet</div>
-          </div>
-        </div>
+        <div class="scroll-list"><div class="pill-list" id="countryList"><div class="empty">No teams</div></div></div>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="loadAllCountries()">🌍 All 48 Teams</button>
-          <button class="btn btn-outline btn-sm" onclick="clearCountries()">🗑 Clear</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadAllCountries()">Reset to all 48</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearCountries()">Clear teams</button>
         </div>
       </div>
     </div>
 
-    <!-- Draw mode -->
-    <div style="margin-top:18px">
-      <label>Draw Mode</label>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="modeEven" onclick="setMode('even')">
-          ⚖️ Split evenly<span>Each person gets an equal share of all teams</span>
-        </button>
-        <button class="mode-btn" id="modePot" onclick="setMode('pot')">
-          🎩 One per pot<span>Each person gets 1 team from each pot (1–4), balanced for fairness</span>
-        </button>
-      </div>
-    </div>
+    <div class="preview" id="preview"></div>
 
-    <!-- Live draw preview -->
-    <div class="draw-preview" id="drawPreview"></div>
-
-    <div class="controls-row" style="margin-top:16px">
-      <button class="btn btn-gold" onclick="runDraw()" style="font-size:1.05rem;padding:13px 30px">🎰 Run the Draw!</button>
-      <button class="btn btn-outline" onclick="resetSetup()">↺ Reset</button>
+    <div class="controls-row">
+      <button class="btn btn-flood" onclick="runDraw()" style="font-size:1.08rem;padding:15px 34px">⚽ Run the draw</button>
+      <button class="btn btn-ghost" onclick="resetSetup()">Start over</button>
     </div>
-  </div>
+  </section>
 
   <!-- Results -->
-  <div class="card" id="resultsCard">
-    <div class="card-title">🎉 Draw Results</div>
-    <div class="results-grid" id="resultsGrid"></div>
+  <section class="panel" id="resultsPanel">
+    <div class="panel-title">🎟 Your tickets</div>
+    <div class="tickets" id="tickets"></div>
 
-    <!-- Dropped teams shown here -->
-    <div id="droppedSection" style="display:none" class="dropped-section">
-      <div class="dropped-title">🚫 Dropped (lowest FIFA ranked)</div>
-      <div class="dropped-list" id="droppedList"></div>
+    <div class="dropped-box" id="droppedBox" style="display:none">
+      <h4>Set aside (lowest ranked — didn't divide evenly)</h4>
+      <div id="droppedList"></div>
     </div>
 
     <div class="controls-row">
-      <button class="btn btn-gold" onclick="runDraw()">🎰 Redraw</button>
-      <button class="btn btn-green" onclick="saveSweepstake()">💾 Save</button>
-      <button class="btn btn-outline" onclick="downloadImage()">📸 Share Image</button>
-      <button class="btn btn-outline" onclick="copyResults()">📋 Copy</button>
-      <button class="btn btn-outline" onclick="printResults()">🖨 Print</button>
+      <button class="btn btn-flood" onclick="runDraw()">Redraw</button>
+      <button class="btn btn-green" onclick="saveSweepstake()">Save draw</button>
+      <button class="btn btn-ghost" onclick="downloadImage()">📸 Share image</button>
+      <button class="btn btn-ghost" onclick="copyResults()">Copy text</button>
+      <button class="btn btn-ghost" onclick="printResults()">Print</button>
     </div>
 
-    <div class="coffee-prompt" id="coffeePrompt">
-      <p>Enjoyed your draw? Support the site! 💛</p>
-      <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="coffee-btn-large">
-        <span>☕</span> Buy Me a Coffee
-      </a>
+    <div class="coffee-zone" id="coffeeZone">
+      <p>Enjoyed the draw? ☕</p>
+      <a href="https://www.buymeacoffee.com/Rm49" target="_blank" rel="noopener" class="coffee-big">☕ Buy Me a Coffee</a>
       <div class="coffee-qr">
-        <img src="qr-code.png" alt="Buy Me a Coffee QR code" width="120" height="120">
-        <span>Or scan to support 📱</span>
+        <img src="qr-code.png" alt="Buy Me a Coffee QR code" width="116" height="116">
+        <span>or scan to support</span>
       </div>
     </div>
-  </div>
+  </section>
 
 </div>
 
-<!-- Cookie Banner -->
 <div id="cookieBanner">
-  <p>🍪 We use cookies to save your sweepstakes so you can return without re-entering everything. No tracking, no ads.</p>
-  <div style="display:flex;gap:10px;flex-shrink:0">
-    <button class="btn btn-outline btn-sm" onclick="declineCookies()">Decline</button>
-    <button class="btn btn-gold btn-sm" onclick="acceptCookies()">Accept & Continue</button>
+  <p>🍪 Cookies save your draws on this device so you can come back later. No tracking, no ads.</p>
+  <div style="display:flex;gap:9px;flex-shrink:0">
+    <button class="btn btn-ghost btn-sm" onclick="declineCookies()">Decline</button>
+    <button class="btn btn-flood btn-sm" onclick="acceptCookies()">Accept</button>
   </div>
 </div>
 
 <script>
-// ─── Cookie helpers ──────────────────────────────────────────────────────────
-const COOKIE_KEY = 'wcSweepConsent';
-const DATA_KEY   = 'wcSweepData';
+// ─── Cookies & storage ────────────────────────────────────────────────────────
+const COOKIE_KEY='wcSweepConsent', DATA_KEY='wcSweepData';
+function setCookie(n,v,d=365){const t=new Date();t.setTime(t.getTime()+d*86400000);document.cookie=`${n}=${encodeURIComponent(v)};expires=${t.toUTCString()};path=/;SameSite=Lax`;}
+function getCookie(n){const m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?decodeURIComponent(m[2]):null;}
+function cookiesAccepted(){return getCookie(COOKIE_KEY)==='yes';}
+function saveToStorage(d){try{localStorage.setItem(DATA_KEY,JSON.stringify(d));}catch(e){}}
+function loadFromStorage(){try{return JSON.parse(localStorage.getItem(DATA_KEY))||{};}catch(e){return{};}}
+function acceptCookies(){setCookie(COOKIE_KEY,'yes');hideBanner();savedData=loadFromStorage();renderSaved();showToast('Cookies accepted — draws will be saved');}
+function declineCookies(){setCookie(COOKIE_KEY,'no');hideBanner();}
+function hideBanner(){const b=document.getElementById('cookieBanner');if(!b)return;b.style.transition='transform 0.3s';b.style.transform='translateY(100%)';setTimeout(()=>b.remove(),300);}
 
-function setCookie(name, val, days=365) {
-  const d = new Date();
-  d.setTime(d.getTime() + days*86400000);
-  document.cookie = `${name}=${encodeURIComponent(val)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
-}
-function getCookie(name) {
-  const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));
-  return m ? decodeURIComponent(m[2]) : null;
-}
-function cookiesAccepted() { return getCookie(COOKIE_KEY) === 'yes'; }
-
-function saveToStorage(data) {
-  try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch(e) {}
-}
-function loadFromStorage() {
-  try { return JSON.parse(localStorage.getItem(DATA_KEY)) || {}; } catch(e) { return {}; }
-}
-
-function acceptCookies() {
-  setCookie(COOKIE_KEY, 'yes');
-  hideBanner();
-  savedData = loadFromStorage();
-  loadSavedSweepstakes();
-  showToast('✅ Cookies accepted — your draws will be saved!');
-}
-function declineCookies() {
-  setCookie(COOKIE_KEY, 'no');
-  hideBanner();
-}
-function hideBanner() {
-  const b = document.getElementById('cookieBanner');
-  b.style.transition = 'transform 0.3s ease';
-  b.style.transform = 'translateY(100%)';
-  setTimeout(() => b.remove(), 300);
-}
-
-// ─── All 48 teams with official 2026 draw pots (Dec 2025 draw) ──────────────
-// pot 1-4 per FIFA. weakHost flags the 3 host nations in Pot 1 who are lower-ranked.
+// ─── 48 confirmed teams, official Dec 2025 pots ───────────────────────────────
 const ALL_COUNTRIES = [
-  // POT 1
-  {name:'Spain',          flag:'🇪🇸', pot:1, rank:3 },
-  {name:'Argentina',      flag:'🇦🇷', pot:1, rank:1 },
-  {name:'France',         flag:'🇫🇷', pot:1, rank:2 },
-  {name:'England',        flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', pot:1, rank:4 },
-  {name:'Brazil',         flag:'🇧🇷', pot:1, rank:5 },
-  {name:'Portugal',       flag:'🇵🇹', pot:1, rank:6 },
-  {name:'Netherlands',    flag:'🇳🇱', pot:1, rank:7 },
-  {name:'Belgium',        flag:'🇧🇪', pot:1, rank:8 },
-  {name:'Germany',        flag:'🇩🇪', pot:1, rank:9 },
-  {name:'USA',            flag:'🇺🇸', pot:1, rank:16, weakHost:true},
-  {name:'Mexico',         flag:'🇲🇽', pot:1, rank:14, weakHost:true},
-  {name:'Canada',         flag:'🇨🇦', pot:1, rank:30, weakHost:true},
-  // POT 2
-  {name:'Croatia',        flag:'🇭🇷', pot:2, rank:10},
-  {name:'Morocco',        flag:'🇲🇦', pot:2, rank:11},
-  {name:'Colombia',       flag:'🇨🇴', pot:2, rank:13},
-  {name:'Uruguay',        flag:'🇺🇾', pot:2, rank:15},
-  {name:'Switzerland',    flag:'🇨🇭', pot:2, rank:17},
-  {name:'Japan',          flag:'🇯🇵', pot:2, rank:18},
-  {name:'Senegal',        flag:'🇸🇳', pot:2, rank:19},
-  {name:'IR Iran',        flag:'🇮🇷', pot:2, rank:20},
-  {name:'South Korea',    flag:'🇰🇷', pot:2, rank:22},
-  {name:'Ecuador',        flag:'🇪🇨', pot:2, rank:23},
-  {name:'Austria',        flag:'🇦🇹', pot:2, rank:24},
-  {name:'Australia',      flag:'🇦🇺', pot:2, rank:26},
-  // POT 3
-  {name:'Norway',         flag:'🇳🇴', pot:3, rank:27},
-  {name:'Panama',         flag:'🇵🇦', pot:3, rank:43},
-  {name:'Egypt',          flag:'🇪🇬', pot:3, rank:34},
-  {name:'Algeria',        flag:'🇩🇿', pot:3, rank:37},
-  {name:'Scotland',       flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', pot:3, rank:33},
-  {name:'Paraguay',       flag:'🇵🇾', pot:3, rank:39},
-  {name:'Tunisia',        flag:'🇹🇳', pot:3, rank:38},
-  {name:'Ivory Coast',    flag:'🇨🇮', pot:3, rank:42},
-  {name:'Uzbekistan',     flag:'🇺🇿', pot:3, rank:50},
-  {name:'Qatar',          flag:'🇶🇦', pot:3, rank:53},
-  {name:'Saudi Arabia',   flag:'🇸🇦', pot:3, rank:60},
-  {name:'South Africa',   flag:'🇿🇦', pot:3, rank:61},
-  // POT 4
-  {name:'Jordan',         flag:'🇯🇴', pot:4, rank:64},
-  {name:'Cabo Verde',     flag:'🇨🇻', pot:4, rank:70},
-  {name:'Ghana',          flag:'🇬🇭', pot:4, rank:73},
-  {name:'Curaçao',        flag:'🇨🇼', pot:4, rank:82},
-  {name:'Haiti',          flag:'🇭🇹', pot:4, rank:83},
-  {name:'New Zealand',    flag:'🇳🇿', pot:4, rank:86},
-  {name:'Bosnia & Herz.', flag:'🇧🇦', pot:4, rank:54},
-  {name:'Sweden',         flag:'🇸🇪', pot:4, rank:31},
-  {name:'Turkey',         flag:'🇹🇷', pot:4, rank:25},
-  {name:'Czechia',        flag:'🇨🇿', pot:4, rank:40},
-  {name:'Congo DR',       flag:'🇨🇩', pot:4, rank:56},
-  {name:'Iraq',           flag:'🇮🇶', pot:4, rank:55},
+  {name:'Spain',flag:'🇪🇸',pot:1,rank:3},{name:'Argentina',flag:'🇦🇷',pot:1,rank:1},{name:'France',flag:'🇫🇷',pot:1,rank:2},
+  {name:'England',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pot:1,rank:4},{name:'Brazil',flag:'🇧🇷',pot:1,rank:5},{name:'Portugal',flag:'🇵🇹',pot:1,rank:6},
+  {name:'Netherlands',flag:'🇳🇱',pot:1,rank:7},{name:'Belgium',flag:'🇧🇪',pot:1,rank:8},{name:'Germany',flag:'🇩🇪',pot:1,rank:9},
+  {name:'USA',flag:'🇺🇸',pot:1,rank:16},{name:'Mexico',flag:'🇲🇽',pot:1,rank:14},{name:'Canada',flag:'🇨🇦',pot:1,rank:30},
+  {name:'Croatia',flag:'🇭🇷',pot:2,rank:10},{name:'Morocco',flag:'🇲🇦',pot:2,rank:11},{name:'Colombia',flag:'🇨🇴',pot:2,rank:13},
+  {name:'Uruguay',flag:'🇺🇾',pot:2,rank:15},{name:'Switzerland',flag:'🇨🇭',pot:2,rank:17},{name:'Japan',flag:'🇯🇵',pot:2,rank:18},
+  {name:'Senegal',flag:'🇸🇳',pot:2,rank:19},{name:'IR Iran',flag:'🇮🇷',pot:2,rank:20},{name:'South Korea',flag:'🇰🇷',pot:2,rank:22},
+  {name:'Ecuador',flag:'🇪🇨',pot:2,rank:23},{name:'Austria',flag:'🇦🇹',pot:2,rank:24},{name:'Australia',flag:'🇦🇺',pot:2,rank:26},
+  {name:'Norway',flag:'🇳🇴',pot:3,rank:27},{name:'Panama',flag:'🇵🇦',pot:3,rank:43},{name:'Egypt',flag:'🇪🇬',pot:3,rank:34},
+  {name:'Algeria',flag:'🇩🇿',pot:3,rank:37},{name:'Scotland',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',pot:3,rank:33},{name:'Paraguay',flag:'🇵🇾',pot:3,rank:39},
+  {name:'Tunisia',flag:'🇹🇳',pot:3,rank:38},{name:'Ivory Coast',flag:'🇨🇮',pot:3,rank:42},{name:'Uzbekistan',flag:'🇺🇿',pot:3,rank:50},
+  {name:'Qatar',flag:'🇶🇦',pot:3,rank:53},{name:'Saudi Arabia',flag:'🇸🇦',pot:3,rank:60},{name:'South Africa',flag:'🇿🇦',pot:3,rank:61},
+  {name:'Jordan',flag:'🇯🇴',pot:4,rank:64},{name:'Cabo Verde',flag:'🇨🇻',pot:4,rank:70},{name:'Ghana',flag:'🇬🇭',pot:4,rank:73},
+  {name:'Curaçao',flag:'🇨🇼',pot:4,rank:82},{name:'Haiti',flag:'🇭🇹',pot:4,rank:83},{name:'New Zealand',flag:'🇳🇿',pot:4,rank:86},
+  {name:'Bosnia & Herz.',flag:'🇧🇦',pot:4,rank:54},{name:'Sweden',flag:'🇸🇪',pot:4,rank:31},{name:'Turkey',flag:'🇹🇷',pot:4,rank:25},
+  {name:'Czechia',flag:'🇨🇿',pot:4,rank:40},{name:'Congo DR',flag:'🇨🇩',pot:4,rank:56},{name:'Iraq',flag:'🇮🇶',pot:4,rank:55},
 ];
 
-// ─── State ───────────────────────────────────────────────────────────────────
-let participants = [];
-let countries    = [];
-let lastResults  = null;
-let lastDropped  = [];
-let savedData    = {};
-let drawMode     = 'even'; // 'even' or 'pot'
+// ─── State ────────────────────────────────────────────────────────────────────
+let participants=[], countries=[], lastResults=null, lastDropped=[], savedData={};
 
-function setMode(m) {
-  drawMode = m;
-  document.getElementById('modeEven').classList.toggle('active', m === 'even');
-  document.getElementById('modePot').classList.toggle('active', m === 'pot');
-  updatePreview();
-}
-
-// ─── Init ────────────────────────────────────────────────────────────────────
-(function init() {
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init(){
   populateCountrySelect();
-  loadAllCountries(true); // default to all 48 teams, no toast
-  savedData = loadFromStorage();
-  if (cookiesAccepted()) {
-    document.getElementById('cookieBanner').remove();
-    loadSavedSweepstakes();
-  } else {
-    loadSavedSweepstakes();
-  }
-  document.getElementById('personInput').addEventListener('keydown', e => { if(e.key==='Enter') addPerson(); });
-  document.getElementById('countrySelect').addEventListener('keydown', e => { if(e.key==='Enter') addCountry(); });
+  loadAllCountries(true);
+  savedData=loadFromStorage();
+  if(cookiesAccepted()) document.getElementById('cookieBanner').remove();
+  renderSaved();
+  document.getElementById('personInput').addEventListener('keydown',e=>{if(e.key==='Enter')addPerson();});
 })();
 
-function populateCountrySelect() {
-  const sel = document.getElementById('countrySelect');
-  sel.innerHTML = '<option value="">— Choose country —</option>';
-  [...ALL_COUNTRIES].sort((a,b) => a.pot - b.pot || a.rank - b.rank).forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.name;
-    o.textContent = `${c.flag} ${c.name} (Pot ${c.pot})`;
+function toggleFair(){document.getElementById('fairDetail').classList.toggle('open');}
+
+function populateCountrySelect(){
+  const sel=document.getElementById('countrySelect');
+  sel.innerHTML='<option value="">— Add a team back —</option>';
+  [...ALL_COUNTRIES].sort((a,b)=>a.pot-b.pot||a.rank-b.rank).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.name; o.textContent=`${c.flag} ${c.name} · Pot ${c.pot}`;
     sel.appendChild(o);
   });
 }
 
-// ─── Participants ─────────────────────────────────────────────────────────────
-function addPerson() {
-  const inp = document.getElementById('personInput');
-  const name = inp.value.trim();
-  if (!name) return;
-  participants.push({name});
-  inp.value = '';
-  renderPeople();
-  updatePreview();
-}
-function removePerson(i) { participants.splice(i,1); renderPeople(); updatePreview(); }
-function clearPeople()   { participants = []; renderPeople(); updatePreview(); }
-function loadPresetParticipants() {
-  ['Alice','Bob','Charlie','Diana','Ethan','Fiona','George','Hannah','Ivan','Julia'].forEach(n => participants.push({name:n}));
+// ─── Players ──────────────────────────────────────────────────────────────────
+function addPerson(){
+  const inp=document.getElementById('personInput');
+  const name=inp.value.trim(); if(!name)return;
+  participants.push({name}); inp.value='';
   renderPeople(); updatePreview();
-  showToast('Example names loaded!');
 }
-function renderPeople() {
-  const list = document.getElementById('personList');
-  document.getElementById('pCount').textContent = participants.length;
-  if (!participants.length) { list.innerHTML = '<div class="empty-state" id="personEmpty">No participants yet</div>'; return; }
-  list.innerHTML = participants.map((p,i) => `
-    <div class="pill person-pill">👤 ${esc(p.name)}<button class="remove" onclick="removePerson(${i})">✕</button></div>`).join('');
+function removePerson(i){participants.splice(i,1);renderPeople();updatePreview();}
+function clearPeople(){participants=[];renderPeople();updatePreview();}
+function renderPeople(){
+  const el=document.getElementById('personList');
+  document.getElementById('pCount').textContent=participants.length;
+  el.innerHTML=participants.length
+    ? participants.map((p,i)=>`<div class="pill pill-person">👤 ${esc(p.name)}<button onclick="removePerson(${i})" aria-label="Remove ${esc(p.name)}">✕</button></div>`).join('')
+    : '<div class="empty">No players yet</div>';
 }
 
-// ─── Countries ────────────────────────────────────────────────────────────────
-function addCountry() {
-  const sel = document.getElementById('countrySelect');
-  const qty = parseInt(document.getElementById('countryQty').value) || 1;
-  const name = sel.value;
-  if (!name) return;
-  const meta = ALL_COUNTRIES.find(c => c.name === name);
-  if (!meta) return;
-  for (let i = 0; i < qty; i++) countries.push({...meta});
+// ─── Teams ────────────────────────────────────────────────────────────────────
+function addCountry(){
+  const sel=document.getElementById('countrySelect');
+  const name=sel.value; if(!name)return;
+  const meta=ALL_COUNTRIES.find(c=>c.name===name); if(!meta)return;
+  countries.push({...meta});
+  sel.value='';
   renderCountries(); updatePreview();
 }
-function removeCountry(i) { countries.splice(i,1); renderCountries(); updatePreview(); }
-function clearCountries()  { countries = []; renderCountries(); updatePreview(); }
-function loadAllCountries(silent=false) {
-  countries = ALL_COUNTRIES.map(c => ({...c}));
+function removeCountry(i){countries.splice(i,1);renderCountries();updatePreview();}
+function clearCountries(){countries=[];renderCountries();updatePreview();}
+function loadAllCountries(silent=false){
+  countries=ALL_COUNTRIES.map(c=>({...c}));
   renderCountries(); updatePreview();
-  if (!silent) showToast('All 48 teams loaded!');
+  if(!silent)showToast('All 48 teams restored');
 }
-function renderCountries() {
-  const list = document.getElementById('countryList');
-  document.getElementById('cCount').textContent = countries.length;
-  if (!countries.length) { list.innerHTML = '<div class="empty-state" id="countryEmpty">No countries yet</div>'; return; }
-  list.innerHTML = countries.map((c,i) => `
-    <div class="pill country-pill">
-      ${c.flag} ${esc(c.name)} <span style="opacity:0.5;font-size:0.78em">P${c.pot}</span>
-      <button class="remove" onclick="removeCountry(${i})">✕</button>
-    </div>`).join('');
+function renderCountries(){
+  const el=document.getElementById('countryList');
+  document.getElementById('cCount').textContent=countries.length;
+  el.innerHTML=countries.length
+    ? countries.map((c,i)=>`<div class="pill pill-country">${c.flag} ${esc(c.name)} <span class="pot-chip">P${c.pot}</span><button onclick="removeCountry(${i})" aria-label="Remove ${esc(c.name)}">✕</button></div>`).join('')
+    : '<div class="empty">No teams</div>';
 }
 
-// ─── Live preview ─────────────────────────────────────────────────────────────
-function updatePreview() {
-  const p = participants.length, c = countries.length;
-  const box = document.getElementById('drawPreview');
-  if (!p || !c) { box.innerHTML = ''; return; }
-
-  if (drawMode === 'pot') {
-    const pots = {1:[],2:[],3:[],4:[]};
-    countries.forEach(t => { if (pots[t.pot]) pots[t.pot].push(t); });
-    const activePots = [1,2,3,4].filter(k => pots[k].length > 0);
-    if (!activePots.length) { box.innerHTML = '⚠️ Load teams with pot data first (use Load All 48 Teams).'; return; }
-
-    // How many full rounds can we do? Each round deals n teams from each pot.
-    const rounds = Math.min(...activePots.map(k => Math.floor(pots[k].length / n)));
-    const teamsPerPerson = rounds * activePots.length;
-    const leftover = activePots.reduce((sum, k) => sum + (pots[k].length % n) + (pots[k].length - Math.floor(pots[k].length / n) * n), 0);
-    const totalLeftover = activePots.reduce((sum, k) => sum + (pots[k].length - rounds * n), 0);
-
-    if (rounds === 0) {
-      box.innerHTML = `⚠️ Not enough teams in each pot for ${p} people — smallest pot needs at least ${p} teams.`;
-      return;
-    }
-    box.innerHTML = `🎩 <strong>${p} people × ${teamsPerPerson} teams each</strong> (${rounds} round${rounds>1?'s':''} × ${activePots.length} pots)${totalLeftover > 0 ? ` · <span style="color:#ff8a8a">${totalLeftover} leftover team${totalLeftover>1?'s':''} dropped (worst-ranked)</span>` : ' · perfect fit'}`;
-    return;
-  }
-
-  // EVEN mode
-  const perPerson = Math.floor(c / p);
-  if (perPerson === 0) { box.innerHTML = `⚠️ Not enough countries for ${p} people — add more teams.`; return; }
-  const toDrop = getDropped(countries, p);
-  let html = `⚖️ <strong>${p} people</strong> × <strong>${perPerson} each</strong> (${c} total`;
-  if (toDrop.length) {
-    html += `, dropping ${toDrop.length})`;
-    html += `<br><span style="font-size:0.82rem;color:rgba(255,255,255,0.5)">Will drop: </span>`;
-    html += toDrop.map(t => `<span class="drop-tag">${t.flag} ${t.name}</span>`).join('');
-  } else {
-    html += `, perfect fit)`;
-  }
-  box.innerHTML = html;
-}
-
-// Returns the teams that will be dropped (worst ranked, to make count divisible by p)
-function getDropped(pool, p) {
-  const keep = Math.floor(pool.length / p) * p;
-  const dropCount = pool.length - keep;
-  if (!dropCount) return [];
-  // Sort worst-first (highest rank number = worst), take the bottom `dropCount`
-  return [...pool].sort((a,b) => b.rank - a.rank).slice(0, dropCount);
-}
-
-// ─── Draw ─────────────────────────────────────────────────────────────────────
-
-// Fisher-Yates — the only shuffle we need; called fresh each draw
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
-}
-
-async function runDraw() {
-  if (!participants.length) { showToast('⚠️ Add at least one participant!'); return; }
-  if (!countries.length)    { showToast('⚠️ Add at least one country!'); return; }
-
-  const n = participants.length;
-
-  if (drawMode === 'pot') {
-    await runPotDraw(n);
-    return;
-  }
-
-  // ── EVEN mode ──
-  const perPerson = Math.floor(countries.length / n);
-  if (perPerson === 0) { showToast('⚠️ Not enough countries — add more teams!'); return; }
-
-  const overlay = document.getElementById('drawOverlay');
-  overlay.classList.add('active');
-  await sleep(900 + Math.random()*600);
-
-  const dropped = getDropped(countries, n);
-  const droppedNames = new Set(dropped.map(d => d.name));
-  const pool = shuffle(countries.filter(c => !droppedNames.has(c.name)));
-  const shuffledParticipants = shuffle(participants);
-  const result = shuffledParticipants.map(p => ({name: p.name, countries: [], countryNames: new Set()}));
-
-  let poolIndex = 0;
-  for (let round = 0; round < perPerson; round++) {
-    const order = shuffle([...Array(n).keys()]);
-    for (const seat of order) {
-      let found = false;
-      for (let attempt = poolIndex; attempt < pool.length; attempt++) {
-        if (!result[seat].countryNames.has(pool[attempt].name)) {
-          [pool[poolIndex], pool[attempt]] = [pool[attempt], pool[poolIndex]];
-          result[seat].countries.push(pool[poolIndex]);
-          result[seat].countryNames.add(pool[poolIndex].name);
-          poolIndex++;
-          found = true;
-          break;
-        }
+// ─── Preview ──────────────────────────────────────────────────────────────────
+function updatePreview(){
+  const p=participants.length, c=countries.length;
+  const box=document.getElementById('preview');
+  if(!p||!c){box.innerHTML='';return;}
+  const pots={1:[],2:[],3:[],4:[]};
+  countries.forEach(t=>{if(pots[t.pot])pots[t.pot].push(t);});
+  const active=[1,2,3,4].filter(k=>pots[k].length>0);
+  const rounds=Math.min(...active.map(k=>Math.floor(pots[k].length/p)));
+  if(rounds===0){box.innerHTML=`⚠️ Not enough teams in every pot for <strong>${p}</strong> players — the smallest pot needs at least ${p} teams.`;return;}
+  const each=rounds*active.length;
+  const totalLeft=active.reduce((s,k)=>s+(pots[k].length-rounds*p),0);
+  let html=`<strong>${p} players</strong> · <strong>${each} teams each</strong> (${rounds} from each pot)`;
+  if(totalLeft>0){
+    // which teams will be set aside: worst-ranked per pot
+    const aside=[];
+    active.forEach(k=>{
+      const excess=pots[k].length-rounds*p;
+      if(excess>0){
+        const worst=[...pots[k]].sort((a,b)=>b.rank-a.rank).slice(0,excess);
+        aside.push(...worst);
       }
-      if (!found && poolIndex < pool.length) {
-        result[seat].countries.push(pool[poolIndex]);
-        result[seat].countryNames.add(pool[poolIndex].name);
-        poolIndex++;
-      }
-    }
-  }
-
-  result.forEach(r => delete r.countryNames);
-  lastResults = result;
-  lastDropped = dropped;
-  overlay.classList.remove('active');
-  renderResults(result, dropped);
-  fireConfetti();
+    });
+    aside.sort((a,b)=>b.rank-a.rank);
+    html+=` · ${totalLeft} set aside:<br>`+aside.map(t=>`<span class="drop-chip">${t.flag} ${t.name}</span>`).join('');
+  } else { html+=' · perfect fit, nothing dropped'; }
+  box.innerHTML=html;
 }
 
-// ── POT mode: guaranteed equal number of teams from each pot per person ──────
-async function runPotDraw(n) {
-  const pots = {1:[], 2:[], 3:[], 4:[]};
-  countries.forEach(t => { if (pots[t.pot]) pots[t.pot].push({...t}); });
-  const activePots = [1,2,3,4].filter(k => pots[k].length > 0);
+// ─── Draw: snake-draft bundles per pot, randomly dealt ───────────────────────
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-  if (!activePots.length) { showToast('⚠️ No pot data — use Load All 48 Teams'); return; }
+async function runDraw(){
+  if(!participants.length){showToast('Add at least one player');return;}
+  if(!countries.length){showToast('Add at least one team');return;}
+  const n=participants.length;
 
-  const overlay = document.getElementById('drawOverlay');
+  const pots={1:[],2:[],3:[],4:[]};
+  countries.forEach(t=>{if(pots[t.pot])pots[t.pot].push({...t});});
+  const active=[1,2,3,4].filter(k=>pots[k].length>0);
+  const rounds=Math.min(...active.map(k=>Math.floor(pots[k].length/n)));
+  if(rounds===0){showToast(`Smallest pot needs at least ${n} teams`);return;}
+
+  const overlay=document.getElementById('drawOverlay');
   overlay.classList.add('active');
-  await sleep(900 + Math.random()*600);
+  await sleep(1000+Math.random()*500);
 
-  // How many complete rounds fit? = floor(smallest pot / n)
-  const rounds = Math.min(...activePots.map(k => Math.floor(pots[k].length / n)));
+  const dropped=[];
+  const result=shuffle(participants).map(p=>({name:p.name,countries:[]}));
 
-  if (rounds === 0) {
-    overlay.classList.remove('active');
-    showToast(`⚠️ Not enough teams — need at least ${n} per pot`);
-    return;
-  }
+  active.forEach(k=>{
+    // 1. Set aside worst-ranked excess from this pot
+    const sorted=[...pots[k]].sort((a,b)=>a.rank-b.rank); // best first
+    const keep=rounds*n;
+    const kept=sorted.slice(0,keep);
+    dropped.push(...sorted.slice(keep));
 
-  // Shuffle each pot, keep only rounds*n teams, drop the rest (worst-ranked)
-  const dropped = [];
-  const trimmedPots = {};
-  activePots.forEach(k => {
-    const shuffled = shuffle(pots[k]);
-    const keep = rounds * n;
-    // Drop worst-ranked from this pot (sort by rank desc, take tail as dropped)
-    const sorted = [...shuffled].sort((a,b) => b.rank - a.rank);
-    const toKeep = new Set(sorted.slice(pots[k].length - keep).map(t => t.name));
-    dropped.push(...sorted.slice(0, pots[k].length - keep));
-    trimmedPots[k] = shuffled.filter(t => toKeep.has(t.name));
-  });
-  dropped.sort((a,b) => b.rank - a.rank);
+    // 2. Snake-draft into n bundles so each bundle's strength is near-identical.
+    //    Order: best→worst, deal 0,1,...,n-1, then n-1,...,1,0, repeating.
+    const bundles=Array.from({length:n},()=>[]);
+    kept.forEach((team,idx)=>{
+      const round=Math.floor(idx/n);
+      const pos=idx%n;
+      const target=(round%2===0)?pos:(n-1-pos);
+      bundles[target].push(team);
+    });
 
-  // Assign: for each pot, split into n equal chunks of `rounds` teams.
-  // Each person gets one chunk from each pot — guaranteeing equal pot representation.
-  const result = shuffle(participants).map(p => ({name: p.name, countries: []}));
-
-  activePots.forEach(k => {
-    // Divide this pot's teams into n chunks (one chunk per person)
-    const pool = shuffle(trimmedPots[k]); // re-shuffle for extra randomness
-    const chunks = Array.from({length: n}, (_, i) =>
-      pool.slice(i * rounds, (i + 1) * rounds)
-    );
-    // Randomly assign chunks to people
-    const assignment = shuffle([...Array(n).keys()]);
-    assignment.forEach((chunkIdx, seat) => {
-      result[seat].countries.push(...chunks[chunkIdx]);
+    // 3. Shuffle which player receives which bundle
+    const assign=shuffle([...Array(n).keys()]);
+    assign.forEach((bundleIdx,seat)=>{
+      result[seat].countries.push(...bundles[bundleIdx]);
     });
   });
 
-  // Sort each person's teams by pot then rank for clean display
-  result.forEach(r => r.countries.sort((a,b) => a.pot - b.pot || a.rank - b.rank));
+  dropped.sort((a,b)=>b.rank-a.rank);
+  result.forEach(r=>r.countries.sort((a,b)=>a.pot-b.pot||a.rank-b.rank));
 
-  lastResults = result;
-  lastDropped = dropped;
+  lastResults=result; lastDropped=dropped;
   overlay.classList.remove('active');
-  renderResults(result, dropped);
+  renderResults(result,dropped);
   fireConfetti();
 }
 
-// ─── Render results ───────────────────────────────────────────────────────────
-function renderResults(result, dropped) {
-  const card = document.getElementById('resultsCard');
-  const grid = document.getElementById('resultsGrid');
-  card.style.display = 'block';
-  card.scrollIntoView({behavior:'smooth', block:'start'});
+// ─── Render tickets ───────────────────────────────────────────────────────────
+function squadStrength(teams){
+  // Lower rank = stronger. Map average rank ~1-90 → 100-10%
+  const avg=teams.reduce((s,t)=>s+t.rank,0)/teams.length;
+  return Math.max(8,Math.min(100,Math.round(108-avg*1.15)));
+}
 
-  grid.innerHTML = result.map((r, i) => `
-    <div class="result-item" style="animation-delay:${i*55}ms">
-      <div class="result-person">👤 ${esc(r.name)}</div>
-      <div class="result-gets">draws</div>
-      ${r.countries.map(c => `<div class="result-country">${c.flag} ${esc(c.name)}${drawMode==='pot' && c.pot ? ` <span class="pot-tag">P${c.pot}</span>` : ''}</div>`).join('')}
-    </div>`).join('');
+function renderResults(result,dropped){
+  const panel=document.getElementById('resultsPanel');
+  const grid=document.getElementById('tickets');
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
 
-  // Dropped teams
-  const sec  = document.getElementById('droppedSection');
-  const list = document.getElementById('droppedList');
-  if (dropped && dropped.length) {
-    sec.style.display = 'block';
-    list.innerHTML = dropped.map(t =>
-      `<span class="drop-tag">${t.flag} ${t.name} <span style="opacity:0.7">FIFA #${t.rank}</span></span>`
-    ).join('');
-  } else {
-    sec.style.display = 'none';
-  }
+  const serialBase=Date.now().toString(36).toUpperCase().slice(-5);
+  grid.innerHTML=result.map((r,i)=>{
+    const str=squadStrength(r.countries);
+    return `
+    <div class="ticket" style="animation-delay:${i*90}ms">
+      <div class="ticket-inner">
+        <div class="ticket-head">
+          <div class="ticket-name">${esc(r.name)}</div>
+          <div class="ticket-serial">№ ${serialBase}-${String(i+1).padStart(2,'0')}</div>
+        </div>
+        ${r.countries.map(c=>`
+          <div class="ticket-team">
+            <span class="flag">${c.flag}</span> ${esc(c.name)}
+            <span class="pot">POT ${c.pot}</span>
+          </div>`).join('')}
+        <div class="strength">
+          <div class="strength-label"><span>Squad strength</span><span>${str}%</span></div>
+          <div class="strength-bar"><div class="strength-fill" style="width:0%" data-w="${str}"></div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 
-  // Coffee reveal
-  const coffee = document.getElementById('coffeePrompt');
-  coffee.classList.remove('reveal');
-  void coffee.offsetWidth;
-  coffee.classList.add('reveal');
+  // animate strength bars after paint
+  requestAnimationFrame(()=>setTimeout(()=>{
+    document.querySelectorAll('.strength-fill').forEach(el=>el.style.width=el.dataset.w+'%');
+  },350));
+
+  const box=document.getElementById('droppedBox');
+  const list=document.getElementById('droppedList');
+  if(dropped&&dropped.length){
+    box.style.display='block';
+    list.innerHTML=dropped.map(t=>`<span class="drop-chip">${t.flag} ${t.name}</span>`).join('');
+  } else box.style.display='none';
+
+  const cz=document.getElementById('coffeeZone');
+  cz.classList.remove('reveal'); void cz.offsetWidth; cz.classList.add('reveal');
 }
 
 // ─── Share image ──────────────────────────────────────────────────────────────
-async function downloadImage() {
-  if (!lastResults) return;
-  const name = document.getElementById('sweepName').value.trim() || 'World Cup Sweepstakes 2026';
+async function downloadImage(){
+  if(!lastResults)return;
+  const name=document.getElementById('sweepName').value.trim()||'World Cup Sweepstakes 2026';
+  const cols=Math.min(lastResults.length,3);
+  const rows=Math.ceil(lastResults.length/cols);
+  const maxTeams=lastResults.reduce((m,r)=>Math.max(m,r.countries.length),0);
+  const cardW=300, cardH=70+maxTeams*30, pad=22, headerH=100, footerH=52;
+  const canvas=document.createElement('canvas');
+  canvas.width=cols*(cardW+pad)+pad;
+  canvas.height=headerH+rows*(cardH+pad)+footerH;
+  const ctx=canvas.getContext('2d');
 
-  const canvas = document.createElement('canvas');
-  const cols   = Math.min(lastResults.length, 4);
-  const rows   = Math.ceil(lastResults.length / cols);
-  const cardW  = 220, cardH = 40 + lastResults.reduce((m,r) => Math.max(m, r.countries.length), 0) * 28;
-  const pad    = 20, headerH = 90, footerH = 48;
-
-  canvas.width  = cols * (cardW + pad) + pad;
-  canvas.height = headerH + rows * (cardH + pad) + pad + footerH;
-
-  const ctx = canvas.getContext('2d');
-
-  // Background
-  ctx.fillStyle = '#0f3a19';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // Pitch stripes
-  for (let y = 0; y < canvas.height; y += 60) {
-    ctx.fillStyle = y % 120 === 0 ? 'rgba(26,92,42,0.7)' : 'rgba(35,107,51,0.7)';
-    ctx.fillRect(0, y, canvas.width, 60);
+  ctx.fillStyle='#081f12'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  for(let y=0;y<canvas.height;y+=70){
+    ctx.fillStyle=(y/70)%2===0?'rgba(14,51,32,0.8)':'rgba(17,64,42,0.8)';
+    ctx.fillRect(0,y,canvas.width,70);
   }
 
-  // Header
-  ctx.fillStyle = '#f5c842';
-  ctx.font = 'bold 32px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('🏆 ' + name, canvas.width / 2, 44);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.font = '14px Arial, sans-serif';
-  ctx.fillText('Drawn ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), canvas.width / 2, 66);
+  ctx.fillStyle='#f6c945'; ctx.font='bold 30px Arial'; ctx.textAlign='center';
+  ctx.fillText('🏆 '+name,canvas.width/2,44);
+  ctx.fillStyle='rgba(244,242,233,0.6)'; ctx.font='13px Courier New';
+  ctx.fillText('FAIR DRAW · '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),canvas.width/2,70);
 
-  // Cards
-  lastResults.forEach((r, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x   = pad + col * (cardW + pad);
-    const y   = headerH + row * (cardH + pad);
-
-    // Card bg
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    roundRect(ctx, x, y, cardW, cardH, 10);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(245,200,66,0.3)';
-    ctx.lineWidth = 1.5;
-    roundRect(ctx, x, y, cardW, cardH, 10);
-    ctx.stroke();
-
-    // Name
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 15px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(r.name, x + cardW/2, y + 22);
-
-    // Countries
-    r.countries.forEach((c, ci) => {
-      ctx.fillStyle = 'rgba(245,200,66,0.85)';
-      ctx.font = '13px Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${c.flag} ${c.name}`, x + cardW/2, y + 40 + ci * 28);
+  lastResults.forEach((r,i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    const x=pad+col*(cardW+pad), y=headerH+row*(cardH+pad);
+    ctx.fillStyle='#f7f3e8';
+    roundRect(ctx,x,y,cardW,cardH,10); ctx.fill();
+    ctx.strokeStyle='rgba(24,38,28,0.25)'; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(x+16,y+6); ctx.lineTo(x+16,y+cardH-6); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#18261c'; ctx.font='bold 17px Arial'; ctx.textAlign='left';
+    ctx.fillText(r.name.toUpperCase(),x+30,y+28);
+    ctx.strokeStyle='#18261c'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x+30,y+37); ctx.lineTo(x+cardW-16,y+37); ctx.stroke();
+    r.countries.forEach((c,ci)=>{
+      ctx.fillStyle='#18261c'; ctx.font='14px Arial';
+      ctx.fillText(`${c.flag} ${c.name}`,x+30,y+62+ci*30);
+      ctx.fillStyle='rgba(24,38,28,0.45)'; ctx.font='10px Courier New'; ctx.textAlign='right';
+      ctx.fillText('POT '+c.pot,x+cardW-16,y+62+ci*30); ctx.textAlign='left';
     });
   });
 
-  // Footer with BMC link
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  ctx.fillRect(0, canvas.height - footerH, canvas.width, footerH);
-  ctx.fillStyle = '#FFDD00';
-  ctx.font = 'bold 13px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('☕ buymeacoffee.com/Rm49', canvas.width / 2, canvas.height - footerH/2 + 5);
+  ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(0,canvas.height-footerH,canvas.width,footerH);
+  ctx.fillStyle='#FFDD00'; ctx.font='bold 14px Arial'; ctx.textAlign='center';
+  ctx.fillText('☕ buymeacoffee.com/Rm49',canvas.width/2,canvas.height-footerH/2+5);
 
-  // Download
-  const link = document.createElement('a');
-  link.download = 'sweepstakes.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  showToast('📸 Image downloaded!');
+  const a=document.createElement('a');
+  a.download='sweepstakes.png'; a.href=canvas.toDataURL('image/png'); a.click();
+  showToast('Image downloaded');
 }
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y, x+w,y+r, r);
-  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h, x+w-r,y+h, r);
-  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h, x,y+h-r, r);
-  ctx.lineTo(x, y+r); ctx.arcTo(x,y, x+r,y, r);
-  ctx.closePath();
+// ─── Save / load ──────────────────────────────────────────────────────────────
+function saveSweepstake(){
+  if(!lastResults){showToast('Run a draw first');return;}
+  if(!cookiesAccepted()){showToast('Accept cookies to save draws');return;}
+  const name=document.getElementById('sweepName').value.trim()||('Draw '+new Date().toLocaleDateString());
+  const id=Date.now().toString();
+  if(!savedData.sweepstakes)savedData.sweepstakes={};
+  savedData.sweepstakes[id]={id,name,date:new Date().toISOString(),participants:[...participants],countries:[...countries],results:lastResults,dropped:lastDropped};
+  saveToStorage(savedData); renderSaved(); showToast('Draw saved');
 }
-
-// ─── Save / Load ──────────────────────────────────────────────────────────────
-function saveSweepstake() {
-  if (!lastResults) { showToast('Run a draw first!'); return; }
-  if (!cookiesAccepted()) { showToast('⚠️ Accept cookies to save sweepstakes'); return; }
-  const name = document.getElementById('sweepName').value.trim() || ('Sweep ' + new Date().toLocaleDateString());
-  const id   = Date.now().toString();
-  if (!savedData.sweepstakes) savedData.sweepstakes = {};
-  savedData.sweepstakes[id] = { id, name, date: new Date().toISOString(), participants:[...participants], countries:[...countries], results:lastResults, dropped:lastDropped };
-  saveToStorage(savedData);
-  loadSavedSweepstakes();
-  showToast('💾 Sweepstake saved!');
-}
-
-function loadSavedSweepstakes() {
-  const list  = document.getElementById('savedList');
-  const count = document.getElementById('savedCount');
-  const sweeps = Object.values(savedData.sweepstakes || {}).sort((a,b) => b.date.localeCompare(a.date));
-  count.textContent = sweeps.length;
-  if (!sweeps.length) { list.innerHTML = '<div class="empty-state">No saved sweepstakes yet — run a draw below!</div>'; return; }
-  list.innerHTML = sweeps.map(s => `
-    <div class="saved-item">
-      <div>
-        <div class="saved-name">🏆 ${esc(s.name)}</div>
-        <div class="saved-meta">${new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} · ${s.results.length} people · ${s.countries.length} teams</div>
-      </div>
+function renderSaved(){
+  const list=document.getElementById('savedList');
+  const sweeps=Object.values(savedData.sweepstakes||{}).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('savedCount').textContent=sweeps.length;
+  list.innerHTML=sweeps.length?sweeps.map(s=>`
+    <div class="saved-row">
+      <div><strong>🎟 ${esc(s.name)}</strong><div class="meta">${new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})} · ${s.results.length} players · ${s.countries.length} teams</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="viewSaved('${s.id}')">👁 View</button>
-        <button class="btn btn-green btn-sm"   onclick="loadSaved('${s.id}')">↺ Load</button>
-        <button class="btn btn-red btn-sm"     onclick="deleteSaved('${s.id}')">🗑</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewSaved('${s.id}')">View</button>
+        <button class="btn btn-green btn-sm" onclick="loadSavedDraw('${s.id}')">Load</button>
+        <button class="btn btn-red btn-sm" onclick="deleteSaved('${s.id}')" aria-label="Delete">🗑</button>
       </div>
-    </div>`).join('');
+    </div>`).join(''):'<div class="empty">Nothing saved yet — run your first draw below.</div>';
 }
+function viewSaved(id){const s=savedData.sweepstakes[id];if(!s)return;lastResults=s.results;lastDropped=s.dropped||[];renderResults(s.results,s.dropped||[]);}
+function loadSavedDraw(id){
+  const s=savedData.sweepstakes[id];if(!s)return;
+  participants=s.participants;countries=s.countries;
+  document.getElementById('sweepName').value=s.name;
+  renderPeople();renderCountries();updatePreview();
+  lastResults=s.results;lastDropped=s.dropped||[];
+  renderResults(s.results,s.dropped||[]);
+  showToast('Draw loaded');
+}
+function deleteSaved(id){if(!confirm('Delete this draw?'))return;delete savedData.sweepstakes[id];saveToStorage(savedData);renderSaved();showToast('Deleted');}
 
-function viewSaved(id) {
-  const s = savedData.sweepstakes[id];
-  if (!s) return;
-  lastResults = s.results;
-  lastDropped = s.dropped || [];
-  renderResults(s.results, s.dropped || []);
+// ─── Copy / print / reset ─────────────────────────────────────────────────────
+function copyResults(){
+  if(!lastResults)return;
+  const text=lastResults.map(r=>`${r.name}: ${r.countries.map(c=>c.flag+' '+c.name).join(', ')}`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard'));
 }
-function loadSaved(id) {
-  const s = savedData.sweepstakes[id];
-  if (!s) return;
-  participants = s.participants;
-  countries    = s.countries;
-  document.getElementById('sweepName').value = s.name;
-  renderPeople(); renderCountries(); updatePreview();
-  lastResults = s.results; lastDropped = s.dropped || [];
-  renderResults(s.results, s.dropped || []);
-  showToast('Sweepstake loaded!');
+function printResults(){
+  if(!lastResults)return;
+  const name=document.getElementById('sweepName').value.trim()||'World Cup Sweepstake';
+  const rows=lastResults.map(r=>`<tr><td style="padding:8px 14px;border:1px solid #ccc;font-weight:700">${esc(r.name)}</td><td style="padding:8px 14px;border:1px solid #ccc">${r.countries.map(c=>c.flag+' '+c.name).join(' · ')}</td></tr>`).join('');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>${esc(name)}</title><style>body{font-family:Arial;padding:30px}h1{color:#0e3320}table{border-collapse:collapse;width:100%}</style></head><body><h1>🏆 ${esc(name)}</h1><p>Drawn ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p><table>${rows}</table><p style="margin-top:22px;color:#888;font-size:12px">☕ buymeacoffee.com/Rm49</p></body></html>`);
+  w.document.close();w.print();
 }
-function deleteSaved(id) {
-  if (!confirm('Delete this sweepstake?')) return;
-  delete savedData.sweepstakes[id];
-  saveToStorage(savedData);
-  loadSavedSweepstakes();
-  showToast('Deleted');
-}
-
-// ─── Copy / Print ─────────────────────────────────────────────────────────────
-function copyResults() {
-  if (!lastResults) return;
-  const text = lastResults.map(r => `${r.name}: ${r.countries.map(c=>c.flag+' '+c.name).join(', ')}`).join('\n');
-  navigator.clipboard.writeText(text).then(() => showToast('📋 Copied!'));
-}
-function printResults() {
-  if (!lastResults) return;
-  const name = document.getElementById('sweepName').value.trim() || 'World Cup Sweepstake';
-  const rows = lastResults.map(r =>
-    `<tr><td style="padding:8px 14px;border:1px solid #ddd;font-weight:600">${esc(r.name)}</td>
-     <td style="padding:8px 14px;border:1px solid #ddd">${r.countries.map(c=>c.flag+' '+c.name).join(' · ')}</td></tr>`).join('');
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>${esc(name)}</title>
-    <style>body{font-family:Arial,sans-serif;padding:30px}h1{color:#1a5c2a}table{border-collapse:collapse;width:100%}</style>
-    </head><body><h1>🏆 ${esc(name)}</h1>
-    <p>Drawn on ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
-    <table>${rows}</table>
-    <p style="margin-top:24px;color:#888;font-size:12px">☕ buymeacoffee.com/Rm49</p>
-    </body></html>`);
-  w.document.close(); w.print();
-}
-
-function resetSetup() {
-  participants = []; countries = []; lastResults = null; lastDropped = [];
-  renderPeople(); renderCountries(); updatePreview();
-  document.getElementById('resultsCard').style.display = 'none';
-  document.getElementById('sweepName').value = '';
+function resetSetup(){
+  participants=[];lastResults=null;lastDropped=[];
+  loadAllCountries(true);
+  renderPeople();updatePreview();
+  document.getElementById('resultsPanel').style.display='none';
+  document.getElementById('sweepName').value='';
 }
 
 // ─── Confetti ─────────────────────────────────────────────────────────────────
-function fireConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
-  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-  const ctx = canvas.getContext('2d');
-  const pieces = Array.from({length:180}, () => ({
-    x:Math.random()*canvas.width, y:-20-Math.random()*200,
-    w:8+Math.random()*8, h:4+Math.random()*5,
-    r:Math.random()*Math.PI*2, vx:(Math.random()-0.5)*4,
-    vy:2.5+Math.random()*3, vr:(Math.random()-0.5)*0.2,
-    color:['#f5c842','#e03030','#3a9f57','#4ab3f4','#fff'][Math.floor(Math.random()*5)]
-  }));
-  let frame = 0;
-  (function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pieces.forEach(p => {
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
-      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-      ctx.restore();
-      p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vy+=0.05;
-    });
-    if (++frame < 160) requestAnimationFrame(draw);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
+function fireConfetti(){
+  const cv=document.getElementById('confetti');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const ctx=cv.getContext('2d');
+  const ps=Array.from({length:170},()=>({x:Math.random()*cv.width,y:-20-Math.random()*200,w:8+Math.random()*8,h:4+Math.random()*5,r:Math.random()*6.28,vx:(Math.random()-0.5)*4,vy:2.5+Math.random()*3,vr:(Math.random()-0.5)*0.2,c:['#f6c945','#e04545','#1d7a42','#4ab3f4','#f4f2e9'][Math.floor(Math.random()*5)]}));
+  let f=0;
+  (function d(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.vy+=0.05;});
+    if(++f<160)requestAnimationFrame(d);else ctx.clearRect(0,0,cv.width,cv.height);
   })();
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
-function showToast(msg, dur=2600) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function showToast(m,d=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 </script>
 
 <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="Rm49" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
